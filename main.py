@@ -1,25 +1,31 @@
-import requests
-from lxml import html
 from selenium import webdriver
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-import time
+from selenium.webdriver.common.keys import Keys
+from bs4 import BeautifulSoup
+import os, time, random, requests
 
 def main():
-    root = "https://www.linkedin.com"
+    root = 'https://www.linkedin.com'
+    login = '/uas/login'
+    email = os.getenv('JOBCHAIN_EMAIL')
+    password = os.getenv('JOBCHAIN_PASSWORD')
     urls = ["/in/jeffreyphuang/", "/in/james534/", "/in/jim-zhao-03ba4697/", "/in/donaldngai/"]
 
-    driver = webdriver.Chrome()
-    driver.get(root + urls[0])
+    browser = webdriver.Chrome()
 
-    # person = Person()
-    time.sleep(15)
-    # person.scrape()
-    # print(person)
+    # Login
+    browser.get(root + login)
+    time.sleep(random.uniform(3.0, 6.0))
+    email_element = browser.find_element_by_id("session_key-login")
+    email_element.send_keys(email)
+    password_element = browser.find_element_by_id("session_password-login")
+    password_element.send_keys(password)
+    password_element.submit()
 
-    driver.close()
+    print('Logged In')
+
+    time.sleep(random.uniform(10.0, 15.0))
+
+    browser.close()
 
 if __name__ == '__main__':
-    print("Starting...")
     main()
