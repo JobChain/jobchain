@@ -5,10 +5,17 @@ import os, time, random, requests
 
 def main():
     root = 'https://www.linkedin.com'
+    urls = ["/in/jeffreyphuang/", "/in/james534/", "/in/jim-zhao-03ba4697/", "/in/donaldngai/"]
     login = '/uas/login'
     email = os.getenv('JOBCHAIN_EMAIL')
     password = os.getenv('JOBCHAIN_PASSWORD')
-    urls = ["/in/jeffreyphuang/", "/in/james534/", "/in/jim-zhao-03ba4697/", "/in/donaldngai/"]
+
+    try:
+        if email is None or password is None:
+            raise ValueError('No email or password found')
+    except ValueError as error:
+        print(error)
+        return
 
     browser = webdriver.Chrome()
 
