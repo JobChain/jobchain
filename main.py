@@ -11,7 +11,21 @@ import os, time, random, requests, pickle, re
 from src.person import Person
 
 def getRandomProxy():
-    pass
+    root = 'https://www.ip-adress.com/proxy-list'
+    proxies = []
+    options = Options()
+    options.add_argument('headless')
+    browser = webdriver.Chrome(chrome_options=options)
+    browser.get(root)
+    time.sleep(random.uniform(1.0, 3.0))
+    page = BeautifulSoup(browser.page_source, 'html.parser')
+    for tag in page.find_all('td'):
+        pattern  = '^(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})(:\d+){0,1}$'
+        text = tag.get_text()
+        if tag and re.fullmatch(pattern, text):
+            proxies.append(text)
+    browser.quit()
+    return random.choice(proxies)
 
 def performLogin(browser, root):
     login = '/uas/login'
@@ -37,9 +51,12 @@ def main():
     visited = {}
     max = 5
 
+    # proxy = getRandomProxy()
     # options = Options()
-    # options.add_argument('--proxy-server=46.102.106.37:13228')
+    # options.add_argument('--proxy-server='+proxy)
+    # browser = webdriver.Chrome(chrome_options=options)
     browser = webdriver.Chrome()
+    # print('Proxy:', proxy)
 
     try:
         performLogin(browser, root)
@@ -58,12 +75,11 @@ def main():
             time.sleep(random.uniform(4.0, 7.0))
             try:
                 browser.execute_script("window.scrollTo(0, Math.ceil(document.body.scrollHeight));")
-                _ = WebDriverWait(browser, random.uniform(5.0, 8.0)).until(EC.presence_of_element_located((By.ID, "education-section")))
+                _ = WebDriverWait(browser, random.uniform(7.0, 10.0)).until(EC.presence_of_element_located((By.ID, "education-section")))
             except TimeoutException:
                 print('Experienced Timeout')
+                time.sleep(random.uniform(100.0, 700.0))
                 browser.close()
-                time.sleep(random.uniform(3.0, 7.0))
-                main()
             finally:
                 page = BeautifulSoup(browser.page_source, 'html.parser')
                 person = Person(page, curr)
