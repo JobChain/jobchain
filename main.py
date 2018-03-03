@@ -43,10 +43,7 @@ def main():
     finally:
         page = BeautifulSoup(browser.page_source, 'html.parser')
         person = Person(page, ids[0])
-
-    # visited = {}
-    # potential = deque([])
-    # count = 0
+        print(person)
 
     time.sleep(random.uniform(10.0, 15.0))
     browser.close()

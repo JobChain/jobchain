@@ -107,4 +107,24 @@ class Person:
                 self.also_viewed_urls.append(url)
 
     def __repr__(self):
-        return 'Print person'
+        value = ''
+        value += 'Name: ' + str(self.name) + '\n'
+        value += 'Education: ' + '\n'
+        for education in self.educations:
+            value += '\t' + str(education['school']) + '\n'
+            value += '\t\t' + str(education['degree']) + '\n'
+            value += '\t\t' + str(education['beginTime']) + ' - ' + str(education['endTime']) + '\n'
+
+        value += 'Experience: ' + '\n'
+        for experience in self.experiences:
+            value += '\t' + str(experience['company']) + '\n'
+            value += '\t\t' +  str(experience['position']) + '\n'
+            value += '\t\t' + str(experience['date_range']) + '\n'
+            value += '\t\t' + str(experience['date_duration']) + '\n'
+            value += '\t\t' + str(experience['location']) + '\n'
+
+        value += 'Viewed: ' + '\n'
+        for url in self.also_viewed_urls:
+            value += '\t' + str(url) + '\n'
+
+        return value
