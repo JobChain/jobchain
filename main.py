@@ -10,7 +10,7 @@ from src.person import Person
 
 def main():
     root = 'https://www.linkedin.com'
-    ids = ["/in/jeffreyphuang/", "/in/james534/", "/in/jim-zhao-03ba4697/", "/in/donaldngai/"]
+    ids = ['/in/jeffreyphuang/', '/in/james534/', '/in/jim-zhao-03ba4697/', '/in/donaldngai/']
     login = '/uas/login'
     email = os.getenv('JOBCHAIN_EMAIL')
     password = os.getenv('JOBCHAIN_PASSWORD')
@@ -27,9 +27,9 @@ def main():
     # Login
     browser.get(root + login)
     time.sleep(random.uniform(3.0, 6.0))
-    email_element = browser.find_element_by_id("session_key-login")
+    email_element = browser.find_element_by_id('session_key-login')
     email_element.send_keys(email)
-    password_element = browser.find_element_by_id("session_password-login")
+    password_element = browser.find_element_by_id('session_password-login')
     password_element.send_keys(password)
     password_element.submit()
 
@@ -38,12 +38,11 @@ def main():
     browser.get(root + ids[0])
     time.sleep(random.uniform(3.0, 6.0))
     try:
-        browser.execute_script("window.scrollTo(0, Math.ceil(document.body.scrollHeight));")
-        _ = WebDriverWait(browser, random.uniform(3.0, 6.0)).until(EC.presence_of_element_located((By.ID, "education-section")))
+        browser.execute_script('window.scrollTo(0, Math.ceil(document.body.scrollHeight));')
+        _ = WebDriverWait(browser, random.uniform(3.0, 6.0)).until(EC.presence_of_element_located((By.ID, 'education-section')))
     finally:
         page = BeautifulSoup(browser.page_source, 'html.parser')
         person = Person(page, ids[0])
-        person.getAlsoViewedUrls()
 
     # visited = {}
     # potential = deque([])
