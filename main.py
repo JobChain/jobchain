@@ -1,12 +1,17 @@
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
+from selenium.common.exceptions import TimeoutException
+from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from bs4 import BeautifulSoup
 from collections import deque
-import os, time, random, requests, pickle
+import os, time, random, requests, pickle, re 
 from src.person import Person
+
+def getRandomProxy():
+    pass
 
 def performLogin(browser, root):
     login = '/uas/login'
@@ -32,6 +37,8 @@ def main():
     visited = {}
     max = 5
 
+    # options = Options()
+    # options.add_argument('--proxy-server=46.102.106.37:13228')
     browser = webdriver.Chrome()
 
     try:
@@ -52,6 +59,11 @@ def main():
             try:
                 browser.execute_script("window.scrollTo(0, Math.ceil(document.body.scrollHeight));")
                 _ = WebDriverWait(browser, random.uniform(5.0, 8.0)).until(EC.presence_of_element_located((By.ID, "education-section")))
+            except TimeoutException:
+                print('Experienced Timeout')
+                browser.close()
+                time.sleep(random.uniform(3.0, 7.0))
+                main()
             finally:
                 page = BeautifulSoup(browser.page_source, 'html.parser')
                 person = Person(page, curr)
@@ -66,7 +78,7 @@ def main():
             break
 
     time.sleep(random.uniform(10.0, 15.0))
-    browser.close()
+    browser.quit()
 
 if __name__ == '__main__':
     main()
