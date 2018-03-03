@@ -5,7 +5,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from bs4 import BeautifulSoup
 from collections import deque
-import os, time, random, requests
+import os, time, random, requests, pickle
 from src.person import Person
 
 def performLogin(browser, root):
