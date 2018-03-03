@@ -2,16 +2,13 @@ from collections import deque
 from bs4 import BeautifulSoup
 
 class Person:
-    name = None
-    experiences = []
-    educations = []
-    also_viewed_urls = []
-    linkedin_id = None
-    page = ''
-
     def __init__(self, page, linkedin_id):
         self.page = page
         self.linkedin_id = linkedin_id
+        self.name = None
+        self.experiences = []
+        self.educations = []
+        self.also_viewed_urls = []
         self.scrape()
 
     def scrape(self):
