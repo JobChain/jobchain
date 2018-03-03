@@ -28,8 +28,9 @@ def performLogin(browser, root):
 
 def main():
     root = 'https://www.linkedin.com'
-    ids = ['/in/jeffreyphuang/', '/in/james534/', '/in/jim-zhao-03ba4697/', '/in/donaldngai/']
+    ids = deque(['/in/jeffreyphuang/'])
     visited = {}
+    max = 5
 
     browser = webdriver.Chrome()
 
@@ -39,19 +40,30 @@ def main():
         print(error)
         return
 
-    for id in ids:
-        browser.get(root + id)
-        #flip-card
-        time.sleep(random.uniform(4.0, 7.0))
-        try:
-            browser.execute_script("window.scrollTo(0, Math.ceil(document.body.scrollHeight));")
-            _ = WebDriverWait(browser, random.uniform(5.0, 8.0)).until(EC.presence_of_element_located((By.ID, "education-section")))
-        finally:
-            page = BeautifulSoup(browser.page_source, 'html.parser')
-            person = Person(page, id)
-            visited[id] = person
-            print(person)
-            print('------------------------------------------------------------------------')
+    while len(ids):
+        for index in range(len(ids)):
+            if len(visited) >= max:
+                break
+            curr = ids.popleft()
+            if (curr in visited):
+                continue
+            browser.get(root + curr)
+            time.sleep(random.uniform(4.0, 7.0))
+            try:
+                browser.execute_script("window.scrollTo(0, Math.ceil(document.body.scrollHeight));")
+                _ = WebDriverWait(browser, random.uniform(5.0, 8.0)).until(EC.presence_of_element_located((By.ID, "education-section")))
+            finally:
+                page = BeautifulSoup(browser.page_source, 'html.parser')
+                person = Person(page, curr)
+                visited[curr] = person
+                nextUrls = person.also_viewed_urls
+                for next in nextUrls:
+                    if (next not in visited):
+                        ids.append(next)
+                print(person)
+                print('------------------------------------------------------------------------')
+        if len(visited) >= max:
+            break
 
     time.sleep(random.uniform(10.0, 15.0))
     browser.close()
