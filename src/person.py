@@ -26,7 +26,14 @@ class Person:
         pass
 
     def getAlsoViewedUrls(self):
-        pass
+        links = []
+        for link in self.page.find_all('a'):
+            url = link.get('href')
+            if url and '/in/' in url:
+                links.append(url)
+        print("Links:")
+        print(links)
+
 
     def __repr__(self):
         return "Print person"

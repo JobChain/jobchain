@@ -4,6 +4,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from bs4 import BeautifulSoup
+from collections import deque
 import os, time, random, requests
 from src.person import Person
 
@@ -40,10 +41,13 @@ def main():
         browser.execute_script("window.scrollTo(0, Math.ceil(document.body.scrollHeight));")
         _ = WebDriverWait(browser, random.uniform(3.0, 6.0)).until(EC.presence_of_element_located((By.ID, "education-section")))
     finally:
-        page = BeautifulSoup(browser.page_source)
-        print(page)
+        page = BeautifulSoup(browser.page_source, 'html.parser')
         person = Person(page, ids[0])
-        print(person)
+        person.getAlsoViewedUrls()
+
+    # visited = {}
+    # potential = deque([])
+    # count = 0
 
     time.sleep(random.uniform(10.0, 15.0))
     browser.close()
