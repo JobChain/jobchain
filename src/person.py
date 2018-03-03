@@ -1,5 +1,6 @@
 from collections import deque
 from bs4 import BeautifulSoup
+import re
 
 class Person:
     def __init__(self, page, linkedin_id):
@@ -98,9 +99,10 @@ class Person:
                 self.educations.append(learning)
 
     def getAlsoViewedUrls(self):
+        pattern = '^\/in\/[a-zA-Z0-9\-]+\/$'
         for link in self.page.find_all('a'):
             url = link.get('href')
-            if url and '/in/' in url:
+            if url and re.fullmatch(pattern, url):
                 self.also_viewed_urls.append(url)
 
     def __repr__(self):
