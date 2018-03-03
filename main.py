@@ -26,8 +26,8 @@ def main():
 
     # Login
     browser.get(root + login)
-    time.sleep(random.uniform(3.0, 6.0))
-    email_element = browser.find_element_by_id('session_key-login')
+    time.sleep(random.uniform(4.0, 7.0))
+    email_element = browser.find_element_by_id("session_key-login")
     email_element.send_keys(email)
     password_element = browser.find_element_by_id('session_password-login')
     password_element.send_keys(password)
@@ -36,10 +36,10 @@ def main():
     print('Logged In')
 
     browser.get(root + ids[0])
-    time.sleep(random.uniform(3.0, 6.0))
+    time.sleep(random.uniform(4.0, 7.0))
     try:
-        browser.execute_script('window.scrollTo(0, Math.ceil(document.body.scrollHeight));')
-        _ = WebDriverWait(browser, random.uniform(3.0, 6.0)).until(EC.presence_of_element_located((By.ID, 'education-section')))
+        browser.execute_script("window.scrollTo(0, Math.ceil(document.body.scrollHeight));")
+        _ = WebDriverWait(browser, random.uniform(5.0, 8.0)).until(EC.presence_of_element_located((By.ID, "education-section")))
     finally:
         page = BeautifulSoup(browser.page_source, 'html.parser')
         person = Person(page, ids[0])
