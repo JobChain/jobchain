@@ -77,6 +77,7 @@ def main():
 
     options = Options()
     options.add_argument('headless')
+    options.add_argument('no-sandbox')
     browser = webdriver.Chrome(chrome_options=options)
 
     try:
