@@ -109,9 +109,8 @@ class Person:
         isWaterloo = False
         if self.educations is not None:
             for education in self.educations:
-                if 'waterloo' in str(education['school']):
+                if 'Waterloo' in str(education['school']):
                     isWaterloo = True
-                    print('@@@@@@@@@@ IS WATERLOO')
         return isWaterloo
 
     def __repr__(self):

@@ -1,6 +1,7 @@
 import boto.sqs
 import os
 from boto.sqs.message import Message
+from colorama import Fore, Back, Style
 
 class Que:
     def __init__(self, name, aws_access_key_id, aws_secret_access_key, region):
@@ -14,7 +15,7 @@ class Que:
     
     def connect(self):
         while (self.connection is None or self.q is None):
-            print('Attempting to connect to Q')
+            print(Fore.YELLOW + 'Attempting to connect to Q' + Style.RESET_ALL)
             self.connection = boto.sqs.connect_to_region(
                 self.region,
                 aws_access_key_id=self.aws_access_key_id,

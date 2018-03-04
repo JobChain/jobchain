@@ -8,6 +8,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from bs4 import BeautifulSoup
 from collections import deque
 from datetime import datetime
+from colorama import Fore, Back, Style
 import os, time, random, requests, re
 from person import Person
 from que import Que
@@ -81,9 +82,9 @@ def main():
         try:
             scrollPattern(browser)
         except TimeoutException as time_ex:
-            print('Experienced Timeout Exception:')
-            time.sleep(random.uniform(1.0, 7.0))
+            print(Fore.RED + 'Experienced Timeout Exception:' + Style.RESET_ALL)
             browser.quit()
+            time.sleep(random.uniform(3.0, 7.0))
             browser = webdriver.Chrome(chrome_options=options)
             try:
                 performLogin(browser, root)
@@ -91,9 +92,9 @@ def main():
                 print(error)
                 return
         except WebDriverException as web_drive_ex:
-            print('Experienced WebDriver Exception:')
-            time.sleep(random.uniform(1.0, 7.0))
+            print(Fore.RED + 'Experienced WebDriver Exception:' + Style.RESET_ALL)
             browser.quit()
+            time.sleep(random.uniform(3.0, 7.0))
             browser = webdriver.Chrome(chrome_options=options)
             try:
                 performLogin(browser, root)
@@ -116,7 +117,7 @@ def main():
                 print('\t' + 'Elapsed time:', datetime.now() - starttime)
                 print('------------------------------------------------------------------------')
             else:
-                print('Skipped:', current)
+                print(Fore.BLUE + 'Skipped:' + Style.RESET_ALL, current)
 
     time.sleep(random.uniform(10.0, 15.0))
     browser.quit()
