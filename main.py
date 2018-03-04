@@ -36,6 +36,8 @@ def picklePotential(q):
     file_object = open(file_name,'wb')
     pickle.dump(q, file_object)
     file_object.close()
+    print('Pickled Q:')
+    print(q)
 
 def unpicklePotential():
     file_name = 'potential.q'
@@ -81,7 +83,7 @@ def scrollPattern(browser):
 
 def main():
     root = 'https://www.linkedin.com'
-    
+
     try:
         ids = unpicklePotential()
     except IOError:
@@ -120,7 +122,6 @@ def main():
                 print('Experienced Timeout:')
                 print(ex)
                 picklePotential(ids)
-                print('Potential:', ids)
                 time.sleep(random.uniform(1.0, 7.0))
                 browser.close()
                 return
@@ -134,7 +135,12 @@ def main():
                         ids.append(next)
                 print(person)
                 print('------------------------------------------------------------------------')
+                print('Stats:')
+                print('\t' + 'Queue Length:', len(ids))
+                print('\t' + 'Visited:', len(visited))
+                print('------------------------------------------------------------------------')
         if len(visited) >= max:
+            picklePotential(ids)
             break
 
     time.sleep(random.uniform(10.0, 15.0))
