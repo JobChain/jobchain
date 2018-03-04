@@ -36,14 +36,14 @@ class Scraper:
         self.options.add_argument('headless')
         self.options.add_argument('no-sandbox')
         self.browser = None
-        self.session = None
+        self.psql = None
         self.connect()
         self.run()
-    
+
     def login(self):
         if self.email is None or self.password is None:
             raise ValueError('No email or password found')
-        
+
         if self.browser:
             self.browser.quit()
             self.sleep(4.0, 7.0)
@@ -61,6 +61,7 @@ class Scraper:
     def maneuver(self):
         randHeight_1 = random.uniform(1.5, 3.0)
         scroll_1 = self.partial_scroll + str(randHeight_1) + "));"
+
         self.browser.execute_script(scroll_1)
         self.sleep(2.0, 3.0)
 
@@ -79,14 +80,13 @@ class Scraper:
             self.sleep(1.0, 3.0)
 
         self.potential = Que(
-            self.q_name, 
-            self.aws_access_key_id, 
-            self.aws_secret_access_key, 
+            self.q_name,
+            self.aws_access_key_id,
+            self.aws_secret_access_key,
             self.aws_region
         )
 
-        psql = PSQL(self.psql_username, self.psql_password)
-        self.session = psql.get_session()
+        self.session = PSQL(self.psql_username, self.psql_password)
 
     def hack(self):
         soup = BeautifulSoup(self.browser.page_source.encode('utf-8').decode('ascii', 'ignore'), 'html.parser')
@@ -94,21 +94,41 @@ class Scraper:
             print(Fore.RED + 'Access Denied' + Style.RESET_ALL)
             print(Fore.YELLOW + 'Attempting Hack' + Style.RESET_ALL)
             self.run()
-    
+
     def scroll(self):
         while True:
             try:
                 print(Fore.YELLOW + 'Attempting to scroll ' + Style.RESET_ALL)
                 self.maneuver()
             except TimeoutException as tex:
-                print(Fore.RED + 'Experienced Timeout Exception:' + Style.RESET_ALL)
-                print(tex)
-                self.hack()
+                while True:
+                    print(Fore.RED + 'Experienced Timeout Exception:' + Style.RESET_ALL)
+                    print(tex)
+                    try:
+                        self.hack()
+                    except WebDriverException as wdex:
+                        print(Fore.RED + 'Experienced WebDriver Exception in self.hack():' + Style.RESET_ALL)
+                        print(wdex)
+                        continue
+                    else:
+                        print(Fore.GREEN + 'hacked!' + Style.RESET_ALL)
+                        self.sleep(3.0, 6.0)
+                        break
                 continue
             except WebDriverException as wdex:
-                print(Fore.RED + 'Experienced WebDriver Exception:' + Style.RESET_ALL)
-                print(wdex)
-                self.hack()
+                while True:
+                    print(Fore.RED + 'Experienced WebDriver Exception:' + Style.RESET_ALL)
+                    print(wdex)
+                    try:
+                        self.hack()
+                    except WebDriverException as wdex:
+                        print(Fore.RED + 'Experienced WebDriver Exception in self.hack():' + Style.RESET_ALL)
+                        print(wdex)
+                        continue
+                    else:
+                        print(Fore.GREEN + 'hacked!' + Style.RESET_ALL)
+                        self.sleep(3.0, 6.0)
+                        break
                 continue
             else:
                 print(Fore.GREEN + 'Scrolled ' + Style.RESET_ALL)
@@ -183,13 +203,13 @@ class Scraper:
                 self.session.add(u)
                 self.session.commit()
                 for e in person.experiences:
-                    work = Work(company_name=e['company'], 
+                    work = Work(company_name=e['company'],
                                 user_id=person.id,
                                 job_title=e['position'])
                     self.session.add(work)
                     self.session.commit()
                 for e in person.educations:
-                    education = Education(school_name=e['school'], 
+                    education = Education(school_name=e['school'],
                                 user_id=person.id,
                                 program=e['degree'])
                     self.session.add(education)
