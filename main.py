@@ -45,9 +45,26 @@ def performLogin(browser, root):
 
     print('Successfully logged in')
 
+def scrollPattern(browser):
+    script = "window.scrollTo(0, Math.ceil(document.body.scrollHeight/"
+
+    randHeight_1 = random.uniform(1.5, 3.0)
+    scroll_1 = script + str(randHeight_1) + "));"
+    browser.execute_script(scroll_1)
+    time.sleep(random.uniform(2.0, 3.0))
+
+    randHeight_2 = random.uniform(1.5, 3.0)
+    scroll_2 = script + str(randHeight_2) + "));"
+    browser.execute_script(scroll_2)
+    _ = WebDriverWait(browser, random.uniform(3.0, 5.0)).until(EC.presence_of_element_located((By.ID, "experience-section")))
+
+    time.sleep(random.uniform(2.0, 3.0))
+    browser.execute_script("window.scrollTo(0, Math.ceil(document.body.scrollHeight));")
+    _ = WebDriverWait(browser, random.uniform(7.0, 10.0)).until(EC.presence_of_element_located((By.ID, "education-section")))
+
 def main():
     root = 'https://www.linkedin.com'
-    ids = deque(['/in/jeffreyphuang/'])
+    ids = deque(['/in/davidferris21/'])
     visited = {}
     max = 5
 
@@ -55,8 +72,8 @@ def main():
     # options = Options()
     # options.add_argument('--proxy-server='+proxy)
     # browser = webdriver.Chrome(chrome_options=options)
-    browser = webdriver.Chrome()
     # print('Proxy:', proxy)
+    browser = webdriver.Chrome()
 
     try:
         performLogin(browser, root)
@@ -74,8 +91,7 @@ def main():
             browser.get(root + curr)
             time.sleep(random.uniform(4.0, 7.0))
             try:
-                browser.execute_script("window.scrollTo(0, Math.ceil(document.body.scrollHeight));")
-                _ = WebDriverWait(browser, random.uniform(7.0, 10.0)).until(EC.presence_of_element_located((By.ID, "education-section")))
+                scrollPattern(browser)
             except TimeoutException:
                 print('Experienced Timeout')
                 time.sleep(random.uniform(100.0, 700.0))
