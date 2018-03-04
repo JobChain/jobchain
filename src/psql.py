@@ -30,7 +30,7 @@ class Work(Base):
                             self.company_name, self.user_id, self.job_title)
 
 class Education(Base):
-    __tablename__ = 'Education'
+    __tablename__ = 'EDUCATION'
 
     school_name = Column(String, primary_key=True)
     user_id = Column(String, primary_key=True)
@@ -51,7 +51,8 @@ class PSQL:
         db_string = "postgresql://" + psql_username + ":" + psql_password + "@jobchain-db.czszo1jjniwj.eu-central-1.rds.amazonaws.com:5432/jobchaindatabase"
         db = create_engine(db_string)
         Session = sessionmaker(db)  
-        self.session = Session()
+        session = Session()
         Base.metadata.create_all(db)
         print('Opened connection to PSQL DB')
+        return session
 

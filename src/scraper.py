@@ -85,7 +85,7 @@ class Scraper:
             self.aws_region
         )
 
-        self.psql = PSQL(self.psql_username, self.psql_password)
+        self.session = PSQL(self.psql_username, self.psql_password)
 
     def hack(self):
         soup = BeautifulSoup(self.browser.page_source.encode('utf-8').decode('ascii', 'ignore'), 'html.parser')
@@ -174,24 +174,25 @@ class Scraper:
             person = Person(soup, current)
             if person.shouldScrape():
                 self.visited[current] = person
-                for url in self.person.also_viewed_urls:
+                for url in person.also_viewed_urls:
                     if url not in self.visited:
                         self.potential.add(url)
-                data = [User(id=person.id, first_name=person.name)]
-                for e in p.experiences:
+                print('Saving data to PSQL')
+                u = User(id=person.id, name=person.name)
+                self.session.add(u)
+                self.session.commit()
+                for e in person.experiences:
                     work = Work(company_name=e['company'], 
                                 user_id=person.id,
-                                job_title=e['position'],
-                                duration=e['date_duration'])
-                    data.append(work)
-                for e in p.educations:
+                                job_title=e['position'])
+                    self.session.add(work)
+                    self.session.commit()
+                for e in person.educations:
                     education = Education(school_name=e['school'], 
                                 user_id=person.id,
                                 program=e['degree'])
-                    data.append(education)
-                print(data)
-                print('Saving data to PSQL')
-                self.psql.session.bulk_save_objects(data)
+                    self.session.add(education)
+                    self.session.commit()
                 print('Saved data to PSQL')
                 print(person)
                 print('------------------------------------------------------------------------')

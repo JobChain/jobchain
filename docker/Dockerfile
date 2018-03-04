@@ -39,9 +39,8 @@ RUN chmod 0755 /usr/local/bin/selenium-server-standalone.jar
 
 RUN mkdir jobchain
 COPY requirements.txt /jobchain/requirements.txt
+RUN pip3 install -r /jobchain/requirements.txt
 RUN mkdir jobchain/src
 COPY src/* /jobchain/src/
-WORKDIR "/jobchain"
-RUN pip3 install -r requirements.txt
 WORKDIR "/jobchain/src"
 CMD python3 scraper.py
