@@ -173,7 +173,7 @@ class Scraper:
             self.visit(self.root_url + current_id)
             self.scroll()
             soup = BeautifulSoup(self.browser.page_source.encode('utf-8').decode('ascii', 'ignore'), 'html.parser')
-            if self.session.query(User).filter_by(id=current_id):
+            if self.session.query(User).filter_by(id=current_id).first():
                 print(Fore.YELLOW + current_id + ' Already in DB' + Style.RESET_ALL)
                 self.potential.remove(current_message)
                 continue
