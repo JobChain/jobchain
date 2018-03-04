@@ -27,6 +27,23 @@ def getRandomProxy():
     browser.quit()
     return random.choice(proxies)
 
+def resetPotential():
+    q = deque(['/in/jeffreyphuang/'])
+    picklePotential(q)
+
+def picklePotential(q):
+    file_name = 'potential.q'
+    file_object = open(file_name,'wb')
+    pickle.dump(q, file_object)
+    file_object.close()
+
+def unpicklePotential():
+    file_name = 'potential.q'
+    file_object = open(file_name,'rb')
+    q = pickle.load(file_object)
+    file_object.close()
+    return q
+
 def performLogin(browser, root):
     login = '/uas/login'
     email = os.getenv('JOBCHAIN_EMAIL')
@@ -64,7 +81,14 @@ def scrollPattern(browser):
 
 def main():
     root = 'https://www.linkedin.com'
-    ids = deque(['/in/davidferris21/'])
+    
+    try:
+        ids = unpicklePotential()
+    except IOError:
+        print('Potential Q corrupted')
+        resetPotential()
+        ids = unpicklePotential()
+
     visited = {}
     max = 5
 
@@ -92,10 +116,14 @@ def main():
             time.sleep(random.uniform(4.0, 7.0))
             try:
                 scrollPattern(browser)
-            except TimeoutException:
-                print('Experienced Timeout')
-                time.sleep(random.uniform(100.0, 700.0))
+            except TimeoutException as ex:
+                print('Experienced Timeout:')
+                print(ex)
+                picklePotential(ids)
+                print('Potential:', ids)
+                time.sleep(random.uniform(1.0, 7.0))
                 browser.close()
+                return
             finally:
                 page = BeautifulSoup(browser.page_source, 'html.parser')
                 person = Person(page, curr)
