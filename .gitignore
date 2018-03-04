@@ -105,3 +105,9 @@ ENV/
 
 # SECRET!!!!
 docker/env
+
+# Node modules
+node_modules/
+
+# Bundle
+bundle.js
