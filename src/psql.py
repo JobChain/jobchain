@@ -50,9 +50,11 @@ class PSQL:
         print('Opening connection to PSQL DB')
         db_string = "postgresql://" + psql_username + ":" + psql_password + "@jobchain-db.czszo1jjniwj.eu-central-1.rds.amazonaws.com:5432/jobchaindatabase"
         db = create_engine(db_string)
-        Session = sessionmaker(db)  
-        session = Session()
+        self.Session = sessionmaker(db)  
+        self.session = self.Session()
         Base.metadata.create_all(db)
         print('Opened connection to PSQL DB')
-        return session
+        
+    def get_session(self):
+        return self.session
 

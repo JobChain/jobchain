@@ -36,7 +36,7 @@ class Scraper:
         self.options.add_argument('headless')
         self.options.add_argument('no-sandbox')
         self.browser = None
-        self.psql = None
+        self.session = None
         self.connect()
         self.run()
     
@@ -85,7 +85,8 @@ class Scraper:
             self.aws_region
         )
 
-        self.session = PSQL(self.psql_username, self.psql_password)
+        psql = PSQL(self.psql_username, self.psql_password)
+        self.session = psql.get_session()
 
     def hack(self):
         soup = BeautifulSoup(self.browser.page_source.encode('utf-8').decode('ascii', 'ignore'), 'html.parser')
