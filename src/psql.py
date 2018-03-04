@@ -1,4 +1,4 @@
-from sqlalchemy import Column, ForeignKey, Integer, String, MetaData, Date, Boolean
+from sqlalchemy import Column, ForeignKey, Integer, String, MetaData, Date, Boolean, Sequence
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, sessionmaker
 from sqlalchemy import create_engine
@@ -16,9 +16,9 @@ class User(Base):
 
 class Work(Base):
     __tablename__ = 'WORK'
-
-    company_name = Column(String, primary_key=True)
-    user_id = Column(String, primary_key=True)
+    id = Column(Integer, Sequence('work_id_seq'), primary_key=True)
+    company_name = Column(String, nullable=False)
+    user_id = Column(String, nullable=False)
     job_title = Column(String)
     location = Column(String)
     start_date = Column(Date)
@@ -31,9 +31,9 @@ class Work(Base):
 
 class Education(Base):
     __tablename__ = 'EDUCATION'
-
-    school_name = Column(String, primary_key=True)
-    user_id = Column(String, primary_key=True)
+    id = Column(Integer, Sequence('education_id_seq'), primary_key=True)
+    school_name = Column(String, nullable=False)
+    user_id = Column(String, nullable=False)
     program = Column(String)
     location = Column(String)
     start_date = Column(Date)
