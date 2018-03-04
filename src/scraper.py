@@ -12,6 +12,8 @@ from colorama import Fore, Back, Style
 import os, time, random, requests, re, sys
 from person import Person
 from que import Que
+from psql import User, Work, Education, PSQL
+
 
 class Scraper:
     def __init__(self):
@@ -26,13 +28,16 @@ class Scraper:
         self.aws_region = os.getenv('AWS_REGION')
         self.email = os.getenv('JOBCHAIN_EMAIL')
         self.password = os.getenv('JOBCHAIN_PASSWORD')
+        self.psql_username = os.getenv('PSQL_USERNAME')
+        self.psql_password = os.getenv('PSQL_PASSWORD')
         self.potential = None
         self.visited = {}
         self.options = Options()
         self.options.add_argument('headless')
         self.options.add_argument('no-sandbox')
         self.browser = None
-        self.connectq()
+        self.psql = None
+        self.connect()
         self.run()
     
     def login(self):
@@ -68,7 +73,7 @@ class Scraper:
         browser.execute_script(self.full_scroll)
         _ = WebDriverWait(self.browser, random.uniform(7.0, 10.0)).until(EC.presence_of_element_located((By.ID, "education-section")))
 
-    def connectq(self):
+    def connect(self):
         if self.potential:
             self.potential = None
             self.sleep(1.0, 3.0)
@@ -79,6 +84,8 @@ class Scraper:
             self.aws_secret_access_key, 
             self.aws_region
         )
+
+        self.psql = PSQL(self.psql_username, self.psql_password)
 
     def hack(self):
         soup = BeautifulSoup(self.browser.page_source.encode('utf-8').decode('ascii', 'ignore'), 'html.parser')
@@ -170,6 +177,22 @@ class Scraper:
                 for url in self.person.also_viewed_urls:
                     if url not in self.visited:
                         self.potential.add(url)
+                data = [User(id=person.id, first_name=person.name)]
+                for e in p.experiences:
+                    work = Work(company_name=e['company'], 
+                                user_id=person.id,
+                                job_title=e['position'],
+                                duration=e['date_duration'])
+                    data.append(work)
+                for e in p.educations:
+                    education = Education(school_name=e['school'], 
+                                user_id=person.id,
+                                program=e['degree'])
+                    data.append(education)
+                print(data)
+                print('Saving data to PSQL')
+                self.psql.session.bulk_save_objects(data)
+                print('Saved data to PSQL')
                 print(person)
                 print('------------------------------------------------------------------------')
                 print('Stats:')
