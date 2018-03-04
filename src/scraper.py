@@ -75,7 +75,9 @@ def main():
     visited = {}
     max = 5
 
-    browser = webdriver.Chrome()
+    options = Options()
+    options.add_argument('headless')
+    browser = webdriver.Chrome(chrome_options=options)
 
     try:
         performLogin(browser, root)
