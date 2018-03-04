@@ -70,7 +70,7 @@ class Scraper:
         _ = WebDriverWait(self.browser, random.uniform(7.0, 10.0)).until(EC.presence_of_element_located((By.ID, "experience-section")))
 
         time.sleep(random.uniform(2.0, 3.0))
-        browser.execute_script(self.full_scroll)
+        self.browser.execute_script(self.full_scroll)
         _ = WebDriverWait(self.browser, random.uniform(7.0, 10.0)).until(EC.presence_of_element_located((By.ID, "education-section")))
 
     def connect(self):
