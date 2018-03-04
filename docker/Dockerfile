@@ -40,3 +40,5 @@ RUN chmod 0755 /usr/local/bin/selenium-server-standalone.jar
 RUN git clone https://github.com/JobChain/jobchain.git
 WORKDIR "/jobchain"
 RUN pip3 install -r requirements.txt
+WORKDIR "/jobchain/src"
+CMD ["python3", "scraper.py"]
