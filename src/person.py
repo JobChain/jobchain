@@ -6,7 +6,7 @@ class Person:
     def __init__(self, page, linkedin_id):
         self.page = page
         self.linkedin_id = linkedin_id
-        self.id = linkedin_id[4:-1]
+        self.id = linkedin_id
         self.name = None
         self.experiences = []
         self.educations = []
