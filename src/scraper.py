@@ -8,7 +8,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from bs4 import BeautifulSoup
 from collections import deque
 import os, time, random, requests, pickle, re 
-from src.person import Person
+from person import Person
 
 def getRandomProxy():
     root = 'https://www.ip-adress.com/proxy-list'
