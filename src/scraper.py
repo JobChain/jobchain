@@ -12,22 +12,8 @@ from colorama import Fore, Back, Style
 import os, time, random, requests, re
 from person import Person
 from que import Que
-from sqlalchemy import Column, ForeignKey, Integer, String, MetaData
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship, sessionmaker
-from sqlalchemy import create_engine
+from psql import User, Work, Education, PSQL
 
-Base = declarative_base()
-
-class User(Base):
-    __tablename__ = 'LINKEDINUSER'
-
-    id = Column(String, primary_key=True)
-    first_name = Column(String, nullable=False)
-    last_name = Column(String)
-    def __repr__(self):
-       return "<User(name='%s', first name='%s', last name='%s')>" % (
-                            self.name, self.first_name, self.last_name)
 
 def performLogin(browser, root):
     login = '/uas/login'
@@ -71,6 +57,8 @@ def main():
     aws_access_key_id = os.getenv('AWS_ACCESS_KEY_ID')
     aws_secret_access_key = os.getenv('AWS_SECRET_ACCESS_KEY')
     aws_region = os.getenv('AWS_REGION')
+    psql_username = os.getenv('PSQL_USERNAME')
+    psql_password = os.getenv('PSQL_PASSWORD')
 
     visited = {}
     max = 5
@@ -88,16 +76,7 @@ def main():
 
     potential = Que(q_name, aws_access_key_id, aws_secret_access_key, aws_region)
 
-    psql_username = os.getenv('PSQL_USERNAME')
-    psql_password = os.getenv('PSQL_PASSWORD')
-
-    db_string = "postgresql://" + psql_username + ":" + psql_password + "@jobchain-db.czszo1jjniwj.eu-central-1.rds.amazonaws.com:5432/jobchaindatabase"
-    db = create_engine(db_string)
-
-    Session = sessionmaker(db)  
-    session = Session()
-
-    Base.metadata.create_all(db)
+    psql = PSQL(psql_username, psql_password)
 
     while potential.count():
         current = potential.first()
@@ -133,9 +112,22 @@ def main():
                 for url in person.also_viewed_urls:
                     if url not in visited:
                         potential.add(url)
-                p = User(id=person.id, first_name=person.name)
-                session.add(p)
-                session.commit()
+                data = [User(id=person.id, first_name=person.name)]
+                for e in p.experiences:
+                    work = Work(company_name=e['company'], 
+                                user_id=person.id,
+                                job_title=e['position'],
+                                duration=e['date_duration'])
+                    data.append(work)
+                for e in p.educations:
+                    education = Education(school_name=e['school'], 
+                                user_id=person.id,
+                                program=e['degree'])
+                    data.append(education)
+                print(data)
+                print('Saving data to PSQL')
+                psql.session.bulk_save_objects(data)
+                print('Saved data to PSQL')
 
                 print(person)
                 print('------------------------------------------------------------------------')
