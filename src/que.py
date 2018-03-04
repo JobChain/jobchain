@@ -13,12 +13,15 @@ class Que:
         self.connect()
     
     def connect(self):
-        self.connection = boto.sqs.connect_to_region(
-            self.region,
-            aws_access_key_id=self.aws_access_key_id,
-            aws_secret_access_key=self.aws_secret_access_key
-        )
-        self.q = self.connection.get_queue(self.name)
+        while (self.connection is None or self.q is None):
+            print('Attempting to connect to Q')
+            self.connection = boto.sqs.connect_to_region(
+                self.region,
+                aws_access_key_id=self.aws_access_key_id,
+                aws_secret_access_key=self.aws_secret_access_key
+            )
+            self.q = self.connection.get_queue(self.name)
+        print('Connected to Q')
 
     def add(self, value):
         message = Message()
