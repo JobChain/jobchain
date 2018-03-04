@@ -9,23 +9,7 @@ from bs4 import BeautifulSoup
 from collections import deque
 import os, time, random, requests, pickle, re 
 from person import Person
-
-def getRandomProxy():
-    root = 'https://www.ip-adress.com/proxy-list'
-    proxies = []
-    options = Options()
-    options.add_argument('headless')
-    browser = webdriver.Chrome(chrome_options=options)
-    browser.get(root)
-    time.sleep(random.uniform(1.0, 3.0))
-    page = BeautifulSoup(browser.page_source, 'html.parser')
-    for tag in page.find_all('td'):
-        pattern  = '^(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})(:\d+){0,1}$'
-        text = tag.get_text()
-        if tag and re.fullmatch(pattern, text):
-            proxies.append(text)
-    browser.quit()
-    return random.choice(proxies)
+from que import Que
 
 def resetPotential():
     q = deque(['/in/jeffreyphuang/'])
@@ -83,25 +67,14 @@ def scrollPattern(browser):
 
 def main():
     root = 'https://www.linkedin.com'
-
-    try:
-        ids = unpicklePotential()
-        if len(ids) == 0:
-            resetPotential()
-            ids = unpicklePotential()
-    except IOError:
-        print('Potential Q corrupted')
-        resetPotential()
-        ids = unpicklePotential()
+    q_name = os.getenv('JOBCHAIN_Q_NAME')
+    aws_access_key_id = os.getenv('AWS_ACCESS_KEY_ID')
+    aws_secret_access_key = os.getenv('AWS_SECRET_ACCESS_KEY')
+    aws_region = os.getenv('AWS_REGION')
 
     visited = {}
     max = 5
 
-    # proxy = getRandomProxy()
-    # options = Options()
-    # options.add_argument('--proxy-server='+proxy)
-    # browser = webdriver.Chrome(chrome_options=options)
-    # print('Proxy:', proxy)
     browser = webdriver.Chrome()
 
     try:
@@ -110,41 +83,35 @@ def main():
         print(error)
         return
 
-    while len(ids):
-        for index in range(len(ids)):
-            if len(visited) >= max:
-                break
-            curr = ids.popleft()
-            if (curr in visited):
-                continue
-            browser.get(root + curr)
-            time.sleep(random.uniform(4.0, 7.0))
-            try:
-                scrollPattern(browser)
-            except TimeoutException as ex:
-                print('Experienced Timeout:')
-                print(ex)
-                picklePotential(ids)
-                time.sleep(random.uniform(1.0, 7.0))
-                browser.close()
-                return
-            finally:
-                page = BeautifulSoup(browser.page_source, 'html.parser')
-                person = Person(page, curr)
-                visited[curr] = person
-                nextUrls = person.also_viewed_urls
-                for next in nextUrls:
-                    if (next not in visited):
-                        ids.append(next)
-                print(person)
-                print('------------------------------------------------------------------------')
-                print('Stats:')
-                print('\t' + 'Queue Length:', len(ids))
-                print('\t' + 'Visited:', len(visited))
-                print('------------------------------------------------------------------------')
-        if len(visited) >= max:
-            picklePotential(ids)
-            break
+    potential = Que(q_name, aws_access_key_id, aws_secret_access_key, aws_region)
+
+    while potential.count():
+        current = potential.first()
+        if current is None:
+            potential.seed()
+            current = potential.first()
+        browser.get(root + current)
+        time.sleep(random.uniform(4.0, 7.0))
+        try:
+            scrollPattern(browser)
+        except TimeoutException as ex:
+            print('Experienced Timeout:')
+            time.sleep(random.uniform(1.0, 7.0))
+            browser.close()
+            return
+        finally:
+            soup = BeautifulSoup(browser.page_source, 'html.parser')
+            person = Person(soup, current)
+            visited[current] = person
+            for url in person.also_viewed_urls:
+                if url not in visited:
+                    potential.add(url)
+            print(person)
+            print('------------------------------------------------------------------------')
+            print('Stats:')
+            print('\t' + 'Queue Length:', potential.count())
+            print('\t' + 'Visited:', len(visited))
+            print('------------------------------------------------------------------------')
 
     time.sleep(random.uniform(10.0, 15.0))
     browser.quit()

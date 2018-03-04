@@ -31,6 +31,13 @@ class Que:
 
     def fetch(self):
         return self.q.get_messages()
+
+    def first(self):
+        messages = self.fetch()
+        return messages[0].get_body() if self.count() else None
+
+    def seed(self):
+        self.add('/in/pushkinabbott/')
     
     def purge(self):
         self.q.purge()
