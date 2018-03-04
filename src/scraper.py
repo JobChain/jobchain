@@ -172,6 +172,10 @@ class Scraper:
             self.visit(self.root_url + current)
             self.scroll()
             soup = BeautifulSoup(self.browser.page_source.encode('utf-8').decode('ascii', 'ignore'), 'html.parser')
+            if self.session.query(User).filter_by(id=current):
+                print(Fore.YELLOW + current + ' Already in DB' + Style.RESET_ALL)
+                self.potential.remove(current)
+                continue
             person = Person(soup, current)
             if person.shouldScrape():
                 self.visited[current] = person
@@ -202,8 +206,10 @@ class Scraper:
                 print('\t' + 'Visited:', len(self.visited))
                 print('\t' + 'Elapsed time:', datetime.now() - self.starttime)
                 print('------------------------------------------------------------------------')
+                self.potential.remove(current)
             else:
                 print(Fore.BLUE + 'Skipped:' + Style.RESET_ALL, current)
+                self.potential.remove(current)
 
         self.sleep(5.0, 10.0)
         self.browser.quit()
