@@ -164,21 +164,22 @@ class Scraper:
             self.sleep(1.0, 3.0)
 
         while self.potential and self.potential.count():
-            current = self.potential.first()
-            if current is None:
+            current_message = self.potential.first()
+            current_id = current_message.get_body()
+            if current_id is None:
                 self.potential.seed()
-                current = self.potential.first()
+                current_id = self.potential.first()
 
-            self.visit(self.root_url + current)
+            self.visit(self.root_url + current_id)
             self.scroll()
             soup = BeautifulSoup(self.browser.page_source.encode('utf-8').decode('ascii', 'ignore'), 'html.parser')
-            if self.session.query(User).filter_by(id=current):
-                print(Fore.YELLOW + current + ' Already in DB' + Style.RESET_ALL)
-                self.potential.remove(current)
+            if self.session.query(User).filter_by(id=current_id):
+                print(Fore.YELLOW + current_id + ' Already in DB' + Style.RESET_ALL)
+                self.potential.remove(current_message)
                 continue
-            person = Person(soup, current)
+            person = Person(soup, current_id)
             if person.shouldScrape():
-                self.visited[current] = person
+                self.visited[current_id] = person
                 for url in person.also_viewed_urls:
                     if url not in self.visited:
                         self.potential.add(url)
@@ -206,10 +207,10 @@ class Scraper:
                 print('\t' + 'Visited:', len(self.visited))
                 print('\t' + 'Elapsed time:', datetime.now() - self.starttime)
                 print('------------------------------------------------------------------------')
-                self.potential.remove(current)
+                self.potential.remove(current_message)
             else:
-                print(Fore.BLUE + 'Skipped:' + Style.RESET_ALL, current)
-                self.potential.remove(current)
+                print(Fore.BLUE + 'Skipped:' + Style.RESET_ALL, current_id)
+                self.potential.remove(current_message)
 
         self.sleep(5.0, 10.0)
         self.browser.quit()

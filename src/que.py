@@ -32,7 +32,7 @@ class Que:
 
     def remove(self, message):
         self.q.delete_message(message)
-        print('Removed {0} from Q'.format(message))
+        print('Removed {0} from Q'.format(message.get_body()))
 
     def count(self):
         return self.q.count()
@@ -42,7 +42,7 @@ class Que:
 
     def first(self):
         messages = self.fetch()
-        return messages[0].get_body() if self.count() else None
+        return messages[0] if self.count() else None
 
     def seed(self):
         self.add('/in/pushkinabbott/')
