@@ -44,4 +44,4 @@ COPY src/* /jobchain/src/
 WORKDIR "/jobchain"
 RUN pip3 install -r requirements.txt
 WORKDIR "/jobchain/src"
-# CMD python3 scraper.py
+CMD python3 scraper.py
