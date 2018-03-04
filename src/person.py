@@ -93,9 +93,9 @@ class Person:
 
             if school or degree or beginTime or endTime:
                 learning['school'] = None if school is None else school.get_text()
-                learning['degree'] = degree
-                learning['beginTime'] = beginTime
-                learning['endTime'] = endTime
+                learning['degree'] = None if degree is None else degree
+                learning['beginTime'] = None if beginTime is None else beginTime
+                learning['endTime'] = None if endTime is None else endTime
                 self.educations.append(learning)
 
     def getAlsoViewedUrls(self):
@@ -104,6 +104,15 @@ class Person:
             url = link.get('href')
             if url and re.fullmatch(pattern, url):
                 self.also_viewed_urls.append(url)
+
+    def shouldScrape(self):
+        isWaterloo = False
+        if self.educations is not None:
+            for education in self.educations:
+                if 'waterloo' in str(education['school']):
+                    isWaterloo = True
+                    print('@@@@@@@@@@ IS WATERLOO')
+        return isWaterloo
 
     def __repr__(self):
         value = ''

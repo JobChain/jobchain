@@ -101,19 +101,22 @@ def main():
                 print(error)
                 return
         finally:
-            soup = BeautifulSoup(browser.page_source, 'html.parser')
+            soup = BeautifulSoup(browser.page_source.encode('utf-8').decode('ascii', 'ignore'), 'html.parser')
             person = Person(soup, current)
-            visited[current] = person
-            for url in person.also_viewed_urls:
-                if url not in visited:
-                    potential.add(url)
-            print(person)
-            print('------------------------------------------------------------------------')
-            print('Stats:')
-            print('\t' + 'Queue Length:', potential.count())
-            print('\t' + 'Visited:', len(visited))
-            print('\t' + 'Elapsed time:', datetime.now() - starttime)
-            print('------------------------------------------------------------------------')
+            if person.shouldScrape():
+                visited[current] = person
+                for url in person.also_viewed_urls:
+                    if url not in visited:
+                        potential.add(url)
+                print(person)
+                print('------------------------------------------------------------------------')
+                print('Stats:')
+                print('\t' + 'Queue Length:', potential.count())
+                print('\t' + 'Visited:', len(visited))
+                print('\t' + 'Elapsed time:', datetime.now() - starttime)
+                print('------------------------------------------------------------------------')
+            else:
+                print('Skipped:', current)
 
     time.sleep(random.uniform(10.0, 15.0))
     browser.quit()
