@@ -9,118 +9,179 @@ from bs4 import BeautifulSoup
 from collections import deque
 from datetime import datetime
 from colorama import Fore, Back, Style
-import os, time, random, requests, re
+import os, time, random, requests, re, sys
 from person import Person
 from que import Que
 
-def performLogin(browser, root):
-    login = '/uas/login'
-    email = os.getenv('JOBCHAIN_EMAIL')
-    password = os.getenv('JOBCHAIN_PASSWORD')
+class Scraper:
+    def __init__(self):
+        self.starttime = datetime.now()
+        self.root_url = 'https://www.linkedin.com'
+        self.login_url = '/uas/login'
+        self.partial_scroll = 'window.scrollTo(0, Math.ceil(document.body.scrollHeight/'
+        self.full_scroll = 'window.scrollTo(0, Math.ceil(document.body.scrollHeight));'
+        self.q_name = os.getenv('JOBCHAIN_Q_NAME')
+        self.aws_access_key_id = os.getenv('AWS_ACCESS_KEY_ID')
+        self.aws_secret_access_key = os.getenv('AWS_SECRET_ACCESS_KEY')
+        self.aws_region = os.getenv('AWS_REGION')
+        self.email = os.getenv('JOBCHAIN_EMAIL')
+        self.password = os.getenv('JOBCHAIN_PASSWORD')
+        self.potential = None
+        self.visited = {}
+        self.options = Options()
+        self.options.add_argument('headless')
+        self.options.add_argument('no-sandbox')
+        self.browser = None
+        self.connectq()
+        self.run()
+    
+    def login(self):
+        if self.email is None or self.password is None:
+            raise ValueError('No email or password found')
+        
+        if self.browser:
+            self.browser.quit()
+            self.sleep(4.0, 7.0)
+            self.browser = None
 
-    if email is None or password is None:
-        raise ValueError('No email or password found')
+        self.drive()
+        self.visit(self.root_url + self.login_url)
+        _ = WebDriverWait(self.browser, random.uniform(5.0, 8.0)).until(EC.presence_of_element_located((By.ID, 'session_key-login')))
+        email_element = self.browser.find_element_by_id("session_key-login")
+        email_element.send_keys(self.email)
+        password_element = self.browser.find_element_by_id('session_password-login')
+        password_element.send_keys(self.password)
+        password_element.submit()
 
-    browser.get(root + login)
-    time.sleep(random.uniform(6.0, 10.0))
-    email_element = browser.find_element_by_id("session_key-login")
-    email_element.send_keys(email)
-    password_element = browser.find_element_by_id('session_password-login')
-    password_element.send_keys(password)
-    password_element.submit()
+    def maneuver(self):
+        randHeight_1 = random.uniform(1.5, 3.0)
+        scroll_1 = self.partial_scroll + str(randHeight_1) + "));"
+        self.browser.execute_script(scroll_1)
+        self.sleep(2.0, 3.0)
 
-    print('Successfully logged in')
+        randHeight_2 = random.uniform(1.5, 3.0)
+        scroll_2 = self.partial_scroll + str(randHeight_2) + "));"
+        self.browser.execute_script(scroll_2)
+        _ = WebDriverWait(self.browser, random.uniform(7.0, 10.0)).until(EC.presence_of_element_located((By.ID, "experience-section")))
 
-def scrollPattern(browser):
-    script = "window.scrollTo(0, Math.ceil(document.body.scrollHeight/"
+        time.sleep(random.uniform(2.0, 3.0))
+        browser.execute_script(self.full_scroll)
+        _ = WebDriverWait(self.browser, random.uniform(7.0, 10.0)).until(EC.presence_of_element_located((By.ID, "education-section")))
 
-    randHeight_1 = random.uniform(1.5, 3.0)
-    scroll_1 = script + str(randHeight_1) + "));"
-    browser.execute_script(scroll_1)
-    time.sleep(random.uniform(2.0, 3.0))
+    def connectq(self):
+        if self.potential:
+            self.potential = None
+            self.sleep(1.0, 3.0)
 
-    randHeight_2 = random.uniform(1.5, 3.0)
-    scroll_2 = script + str(randHeight_2) + "));"
-    browser.execute_script(scroll_2)
-    _ = WebDriverWait(browser, random.uniform(3.0, 5.0)).until(EC.presence_of_element_located((By.ID, "experience-section")))
+        self.potential = Que(
+            self.q_name, 
+            self.aws_access_key_id, 
+            self.aws_secret_access_key, 
+            self.aws_region
+        )
 
-    time.sleep(random.uniform(2.0, 3.0))
-    browser.execute_script("window.scrollTo(0, Math.ceil(document.body.scrollHeight));")
-    _ = WebDriverWait(browser, random.uniform(7.0, 10.0)).until(EC.presence_of_element_located((By.ID, "education-section")))
+    def hack(self):
+        soup = BeautifulSoup(self.browser.page_source.encode('utf-8').decode('ascii', 'ignore'), 'html.parser')
+        if soup.find(class_='join-form'):
+            print(Fore.RED + 'Access Denied' + Style.RESET_ALL)
+            print(Fore.YELLOW + 'Attempting Hack' + Style.RESET_ALL)
+            self.run()
+    
+    def scroll(self):
+        while True:
+            try:
+                print(Fore.YELLOW + 'Attempting to scroll ' + Style.RESET_ALL)
+                self.maneuver()
+            except TimeoutException as tex:
+                print(Fore.RED + 'Experienced Timeout Exception:' + Style.RESET_ALL)
+                print(tex)
+                self.hack()
+                continue
+            except WebDriverException as wdex:
+                print(Fore.RED + 'Experienced WebDriver Exception:' + Style.RESET_ALL)
+                print(wdex)
+                self.hack()
+                continue
+            else:
+                print(Fore.GREEN + 'Scrolled ' + Style.RESET_ALL)
+                self.sleep(3.0, 6.0)
+                break
 
-def main():
-    starttime = datetime.now()
-    root = 'https://www.linkedin.com'
-    q_name = os.getenv('JOBCHAIN_Q_NAME')
-    aws_access_key_id = os.getenv('AWS_ACCESS_KEY_ID')
-    aws_secret_access_key = os.getenv('AWS_SECRET_ACCESS_KEY')
-    aws_region = os.getenv('AWS_REGION')
+    def visit(self, url):
+        while True:
+            try:
+                print(Fore.YELLOW + 'Attempting to visit ' + url + Style.RESET_ALL)
+                self.browser.get(url)
+            except TimeoutException as tex:
+                print(Fore.RED + 'Experienced Timeout Exception:' + Style.RESET_ALL)
+                print(tex)
+                self.sleep(3.0, 6.0)
+                continue
+            except WebDriverException as wdex:
+                print(Fore.RED + 'Experienced WebDriver Exception:' + Style.RESET_ALL)
+                print(wdex)
+                self.sleep(3.0, 6.0)
+                continue
+            else:
+                print(Fore.GREEN + 'Visited ' + url + Style.RESET_ALL)
+                self.sleep(3.0, 6.0)
+                break
 
-    visited = {}
-    max = 5
+    def drive(self):
+        while True:
+            try:
+                print(Fore.YELLOW + 'Attempting to create WebDriver' + Style.RESET_ALL)
+                self.browser = webdriver.Chrome(chrome_options=self.options)
+            except ConnectionResetError as cre:
+                print(Fore.RED + 'Experienced ConnectionResetError:' + Style.RESET_ALL)
+                print(cre)
+                self.sleep(3.0, 6.0)
+                continue
+            else:
+                print(Fore.GREEN + 'WebDriver Created' + Style.RESET_ALL)
+                self.sleep(3.0, 6.0)
+                break
 
-    options = Options()
-    options.add_argument('headless')
-    options.add_argument('no-sandbox')
-    browser = webdriver.Chrome(chrome_options=options)
+    def sleep(self, low, high):
+        time.sleep(random.uniform(low, high))
 
-    try:
-        performLogin(browser, root)
-    except ValueError as error:
-        print(error)
-        return
-
-    potential = Que(q_name, aws_access_key_id, aws_secret_access_key, aws_region)
-
-    while potential.count():
-        current = potential.first()
-        if current is None:
-            potential.seed()
-            current = potential.first()
-        browser.get(root + current)
-        time.sleep(random.uniform(6.0, 9.0))
+    def run(self):
         try:
-            scrollPattern(browser)
-        except TimeoutException as time_ex:
-            print(Fore.RED + 'Experienced Timeout Exception:' + Style.RESET_ALL)
-            browser.quit()
-            time.sleep(random.uniform(3.0, 7.0))
-            browser = webdriver.Chrome(chrome_options=options)
-            try:
-                performLogin(browser, root)
-            except ValueError as error:
-                print(error)
-                return
-        except WebDriverException as web_drive_ex:
-            print(Fore.RED + 'Experienced WebDriver Exception:' + Style.RESET_ALL)
-            browser.quit()
-            time.sleep(random.uniform(3.0, 7.0))
-            browser = webdriver.Chrome(chrome_options=options)
-            try:
-                performLogin(browser, root)
-            except ValueError as error:
-                print(error)
-                return
-        finally:
-            soup = BeautifulSoup(browser.page_source.encode('utf-8').decode('ascii', 'ignore'), 'html.parser')
+            self.login()
+        except ValueError as ve:
+            print(ve)
+            sys.exit()
+        else:
+            print(Fore.GREEN + 'Logged In' + Style.RESET_ALL)
+            self.sleep(1.0, 3.0)
+
+        while self.potential and self.potential.count():
+            current = self.potential.first()
+            if current is None:
+                self.potential.seed()
+                current = self.potential.first()
+
+            self.visit(self.root_url + current)
+            self.scroll()
+            soup = BeautifulSoup(self.browser.page_source.encode('utf-8').decode('ascii', 'ignore'), 'html.parser')
             person = Person(soup, current)
             if person.shouldScrape():
-                visited[current] = person
-                for url in person.also_viewed_urls:
-                    if url not in visited:
-                        potential.add(url)
+                self.visited[current] = person
+                for url in self.person.also_viewed_urls:
+                    if url not in self.visited:
+                        self.potential.add(url)
                 print(person)
                 print('------------------------------------------------------------------------')
                 print('Stats:')
-                print('\t' + 'Queue Length:', potential.count())
-                print('\t' + 'Visited:', len(visited))
-                print('\t' + 'Elapsed time:', datetime.now() - starttime)
+                print('\t' + 'Queue Length:', self.potential.count())
+                print('\t' + 'Visited:', len(self.visited))
+                print('\t' + 'Elapsed time:', datetime.now() - self.starttime)
                 print('------------------------------------------------------------------------')
             else:
                 print(Fore.BLUE + 'Skipped:' + Style.RESET_ALL, current)
 
-    time.sleep(random.uniform(10.0, 15.0))
-    browser.quit()
+        self.sleep(5.0, 10.0)
+        self.browser.quit()
 
 if __name__ == '__main__':
-    main()
+    Scraper()
