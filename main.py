@@ -86,6 +86,9 @@ def main():
 
     try:
         ids = unpicklePotential()
+        if len(ids) == 0:
+            resetPotential()
+            ids = unpicklePotential()
     except IOError:
         print('Potential Q corrupted')
         resetPotential()
