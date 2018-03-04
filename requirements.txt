@@ -4,3 +4,5 @@ bs4
 flask
 boto
 colorama
+sqlalchemy
+psycopg2

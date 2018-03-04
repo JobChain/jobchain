@@ -12,6 +12,22 @@ from colorama import Fore, Back, Style
 import os, time, random, requests, re
 from person import Person
 from que import Que
+from sqlalchemy import Column, ForeignKey, Integer, String, MetaData
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import relationship, sessionmaker
+from sqlalchemy import create_engine
+
+Base = declarative_base()
+
+class User(Base):
+    __tablename__ = 'LINKEDINUSER'
+
+    id = Column(String, primary_key=True)
+    first_name = Column(String, nullable=False)
+    last_name = Column(String)
+    def __repr__(self):
+       return "<User(name='%s', first name='%s', last name='%s')>" % (
+                            self.name, self.first_name, self.last_name)
 
 def performLogin(browser, root):
     login = '/uas/login'
@@ -72,11 +88,19 @@ def main():
 
     potential = Que(q_name, aws_access_key_id, aws_secret_access_key, aws_region)
 
+    psql_username = os.getenv('PSQL_USERNAME')
+    psql_password = os.getenv('PSQL_PASSWORD')
+
+    db_string = "postgresql://" + psql_username + ":" + psql_password + "@jobchain-db.czszo1jjniwj.eu-central-1.rds.amazonaws.com:5432/jobchaindatabase"
+    db = create_engine(db_string)
+
+    Session = sessionmaker(db)  
+    session = Session()
+
+    Base.metadata.create_all(db)
+
     while potential.count():
         current = potential.first()
-        if current is None:
-            potential.seed()
-            current = potential.first()
         browser.get(root + current)
         time.sleep(random.uniform(6.0, 9.0))
         try:
@@ -109,6 +133,10 @@ def main():
                 for url in person.also_viewed_urls:
                     if url not in visited:
                         potential.add(url)
+                p = User(id=person.id, first_name=person.name)
+                session.add(p)
+                session.commit()
+
                 print(person)
                 print('------------------------------------------------------------------------')
                 print('Stats:')
