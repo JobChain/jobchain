@@ -112,7 +112,7 @@ class Person:
         for education in self.educations:
             value += '\t' + str(education['school']) + '\n'
             value += '\t\t' + str(education['degree']) + '\n'
-            value += '\t\t' + str(education['beginTime']) + ' - ' + str(education['endTime']) + '\n'
+            value += '\t\t' + str(education['beginTime']) + ' to ' + str(education['endTime']) + '\n'
 
         value += 'Experience: ' + '\n'
         for experience in self.experiences:

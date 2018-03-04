@@ -1,34 +1,16 @@
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
-from selenium.common.exceptions import TimeoutException
+from selenium.common.exceptions import TimeoutException, WebDriverException
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from bs4 import BeautifulSoup
 from collections import deque
-import os, time, random, requests, pickle, re 
+from datetime import datetime
+import os, time, random, requests, re
 from person import Person
 from que import Que
-
-def resetPotential():
-    q = deque(['/in/jeffreyphuang/'])
-    picklePotential(q)
-
-def picklePotential(q):
-    file_name = 'potential.q'
-    file_object = open(file_name,'wb')
-    pickle.dump(q, file_object)
-    file_object.close()
-    print('Pickled Q:')
-    print(q)
-
-def unpicklePotential():
-    file_name = 'potential.q'
-    file_object = open(file_name,'rb')
-    q = pickle.load(file_object)
-    file_object.close()
-    return q
 
 def performLogin(browser, root):
     login = '/uas/login'
@@ -39,7 +21,7 @@ def performLogin(browser, root):
         raise ValueError('No email or password found')
 
     browser.get(root + login)
-    time.sleep(random.uniform(4.0, 7.0))
+    time.sleep(random.uniform(6.0, 10.0))
     email_element = browser.find_element_by_id("session_key-login")
     email_element.send_keys(email)
     password_element = browser.find_element_by_id('session_password-login')
@@ -66,6 +48,7 @@ def scrollPattern(browser):
     _ = WebDriverWait(browser, random.uniform(7.0, 10.0)).until(EC.presence_of_element_located((By.ID, "education-section")))
 
 def main():
+    starttime = datetime.now()
     root = 'https://www.linkedin.com'
     q_name = os.getenv('JOBCHAIN_Q_NAME')
     aws_access_key_id = os.getenv('AWS_ACCESS_KEY_ID')
@@ -93,14 +76,29 @@ def main():
             potential.seed()
             current = potential.first()
         browser.get(root + current)
-        time.sleep(random.uniform(4.0, 7.0))
+        time.sleep(random.uniform(6.0, 9.0))
         try:
             scrollPattern(browser)
-        except TimeoutException as ex:
-            print('Experienced Timeout:')
+        except TimeoutException as time_ex:
+            print('Experienced Timeout Exception:')
             time.sleep(random.uniform(1.0, 7.0))
-            browser.close()
-            return
+            browser.quit()
+            browser = webdriver.Chrome(chrome_options=options)
+            try:
+                performLogin(browser, root)
+            except ValueError as error:
+                print(error)
+                return
+        except WebDriverException as web_drive_ex:
+            print('Experienced WebDriver Exception:')
+            time.sleep(random.uniform(1.0, 7.0))
+            browser.quit()
+            browser = webdriver.Chrome(chrome_options=options)
+            try:
+                performLogin(browser, root)
+            except ValueError as error:
+                print(error)
+                return
         finally:
             soup = BeautifulSoup(browser.page_source, 'html.parser')
             person = Person(soup, current)
@@ -113,6 +111,7 @@ def main():
             print('Stats:')
             print('\t' + 'Queue Length:', potential.count())
             print('\t' + 'Visited:', len(visited))
+            print('\t' + 'Elapsed time:', datetime.now() - starttime)
             print('------------------------------------------------------------------------')
 
     time.sleep(random.uniform(10.0, 15.0))
