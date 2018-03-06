@@ -114,7 +114,8 @@ class Scraper:
         )
 
         self.psql = PSQL(self.psql_username, self.psql_password)
-        self.session = self.psql.get_session()
+        self.session = self.psql.session
+        print(self.session)
 
     def hack(self):
         soup = BeautifulSoup(self.browser.page_source.encode('utf-8').decode('ascii', 'ignore'), 'html.parser')
@@ -186,20 +187,21 @@ class Scraper:
             self.login()
         except ValueError as ve:
             print(ve)
-            sys.exit()
+            sys.exit(0)
         else:
             print(Fore.GREEN + 'Logged In' + Style.RESET_ALL)
             self.sleep(1.0, 3.0)
 
-        if self.potential and self.potential.count() == 0:
-            self.potential.seed()
+        if self.potential is None:
+            print(Fore.RED + 'Q is None' + Style.RESET_ALL)
+            sys.exit(0)
 
-        while self.potential and self.potential.count():
+        if not self.potential.first():
+            self.reset()
+
+        while self.potential.first():
             current_message = self.potential.first()
             current_id = current_message.get_body()
-            if current_id is None:
-                self.potential.seed()
-                current_id = self.potential.first()
 
             self.visit(self.root_url + current_id)
             self.scroll()
@@ -230,16 +232,24 @@ class Scraper:
         self.sleep(5.0, 10.0)
         self.browser.quit()
 
+    def reset(self):
+        print('all Purged')
+        self.psql.reset()
+        self.potential.reset()
+        while(not self.potential.first()):
+            self.sleep(2.0,3.0)
+        self.is_in_checked_user(self.potential.initial())
+
     def is_in_checked_user(self, id):
         if self.session.query(CheckedUser).filter_by(id=id).first():
-            self.session.add(CheckedUser(id=id))
-            self.session.commit()
             return True
         else:
+            self.session.add(CheckedUser(id=id))
+            self.session.commit()
             return False
 
     def write_to_db(self, person):
-        print(Fore.GREEN + 'Saving data to PSQL')
+        print(Fore.GREEN + 'Saving data to PSQL' + Style.RESET_ALL)
         u = User(id=person.id, name=person.name)
         self.session.add(u)
         self.session.commit()
@@ -255,7 +265,7 @@ class Scraper:
                                   program=e['degree'])
             self.session.add(education)
             self.session.commit()
-        print(Fore.GREEN + 'Saved data to PSQL')
+        print(Fore.GREEN + 'Saved data to PSQL' + Style.RESET_ALL)
 
 if __name__ == '__main__':
     Scraper()
