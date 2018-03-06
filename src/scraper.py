@@ -106,9 +106,9 @@ class Scraper:
                     print(tex)
                     try:
                         self.hack()
-                    except WebDriverException as wdex:
+                    except WebDriverException as webdex:
                         print(Fore.RED + 'Experienced WebDriver Exception in self.hack():' + Style.RESET_ALL)
-                        print(wdex)
+                        print(webdex)
                         continue
                     else:
                         print(Fore.GREEN + 'hacked!' + Style.RESET_ALL)
@@ -121,9 +121,9 @@ class Scraper:
                     print(wdex)
                     try:
                         self.hack()
-                    except WebDriverException as wdex:
+                    except WebDriverException as widdex:
                         print(Fore.RED + 'Experienced WebDriver Exception in self.hack():' + Style.RESET_ALL)
-                        print(wdex)
+                        print(widdex)
                         continue
                     else:
                         print(Fore.GREEN + 'hacked!' + Style.RESET_ALL)
