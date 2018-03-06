@@ -230,6 +230,8 @@ class Scraper:
 
     def is_in_checked_user(self, id):
         if self.session.query(CheckedUser).filter_by(id=id).first():
+            self.session.add(CheckedUser(id=id))
+            self.session.commit()
             return True
         else:
             return False
