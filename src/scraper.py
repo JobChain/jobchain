@@ -30,6 +30,7 @@ class Scraper:
         self.password = os.getenv('JOBCHAIN_PASSWORD')
         self.psql_username = os.getenv('PSQL_USERNAME')
         self.psql_password = os.getenv('PSQL_PASSWORD')
+        self.verify_env_var()
         self.potential = None
         self.visited = {}
         self.options = Options()
@@ -39,6 +40,32 @@ class Scraper:
         self.session = None
         self.connect()
         self.run()
+
+    def verify_env_var(self):
+        if not self.q_name:
+            print("Missing q_name")
+            sys.exit(0)
+        elif not self.aws_access_key_id:
+            print("Missing aws_access_key_id")
+            sys.exit(0)
+        elif not self.aws_secret_access_key:
+            print("Missing aws_secret_access_key")
+            sys.exit(0)
+        elif not self.aws_region:
+            print("Missing aws_region")
+            sys.exit(0)
+        elif not self.email:
+            print("Missing email")
+            sys.exit(0)
+        elif not self.password:
+            print("Missing password")
+            sys.exit(0)
+        elif not self.psql_username:
+            print("Missing psql_username")
+            sys.exit(0)
+        elif not self.psql_password:
+            print("Missing psql_password")
+            sys.exit(0)
     
     def login(self):
         if self.email is None or self.password is None:
@@ -85,8 +112,7 @@ class Scraper:
             self.aws_region
         )
 
-        psql = PSQL(self.psql_username, self.psql_password)
-        self.session = psql.get_session()
+        self.session = PSQL(self.psql_username, self.psql_password).get_session()
 
     def hack(self):
         soup = BeautifulSoup(self.browser.page_source.encode('utf-8').decode('ascii', 'ignore'), 'html.parser')
@@ -183,23 +209,7 @@ class Scraper:
                 for url in person.also_viewed_urls:
                     if url not in self.visited:
                         self.potential.add(url)
-                print('Saving data to PSQL')
-                u = User(id=person.id, name=person.name)
-                self.session.add(u)
-                self.session.commit()
-                for e in person.experiences:
-                    work = Work(company_name=e['company'], 
-                                user_id=person.id,
-                                job_title=e['position'])
-                    self.session.add(work)
-                    self.session.commit()
-                for e in person.educations:
-                    education = Education(school_name=e['school'], 
-                                user_id=person.id,
-                                program=e['degree'])
-                    self.session.add(education)
-                    self.session.commit()
-                print('Saved data to PSQL')
+                self.write_to_db(person)
                 print(person)
                 print('------------------------------------------------------------------------')
                 print('Stats:')
@@ -214,6 +224,25 @@ class Scraper:
 
         self.sleep(5.0, 10.0)
         self.browser.quit()
+
+    def write_to_db(self, person):
+        print(Fore.GREEN + 'Saving data to PSQL')
+        u = User(id=person.id, name=person.name)
+        self.session.add(u)
+        self.session.commit()
+        for e in person.experiences:
+            work = Work(company_name=e['company'],
+                        user_id=person.id,
+                        job_title=e['position'])
+            self.session.add(work)
+            self.session.commit()
+        for e in person.educations:
+            education = Education(school_name=e['school'],
+                                  user_id=person.id,
+                                  program=e['degree'])
+            self.session.add(education)
+            self.session.commit()
+        print(Fore.GREEN + 'Saved data to PSQL')
 
 if __name__ == '__main__':
     Scraper()
