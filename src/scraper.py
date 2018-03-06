@@ -12,7 +12,7 @@ from colorama import Fore, Back, Style
 import os, time, random, requests, re, sys
 from person import Person
 from que import Que
-from psql import User, Work, Education, PSQL
+from psql import User, Work, Education, PSQL, CheckedUser
 
 
 class Scraper:
@@ -207,7 +207,7 @@ class Scraper:
             if person.shouldScrape():
                 self.visited[current_id] = person
                 for url in person.also_viewed_urls:
-                    if url not in self.visited:
+                    if url not in self.visited and not self.is_in_checked_user(url):
                         self.potential.add(url)
                 self.write_to_db(person)
                 print(person)
@@ -224,6 +224,12 @@ class Scraper:
 
         self.sleep(5.0, 10.0)
         self.browser.quit()
+
+    def is_in_checked_user(self, id):
+        if self.session.query(CheckedUser).filter_by(id=id).first():
+            return True
+        else:
+            return False
 
     def write_to_db(self, person):
         print(Fore.GREEN + 'Saving data to PSQL')

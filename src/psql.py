@@ -45,6 +45,14 @@ class Education(Base):
        return "<Education(name='%s', user id='%s', program='%s')>" % (
                             self.school_name, self.user_id, self.program)
 
+class CheckedUser(Base):
+    __tablename__ = 'CHECKEDUSER'
+
+    id = Column(String, primary_key=True)
+    def __repr__(self):
+       return "<User(id='%s')>" % (
+                            self.id)
+
 class PSQL:
     def __init__(self, psql_username, psql_password):
         print('Opening connection to PSQL DB')
