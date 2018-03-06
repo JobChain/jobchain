@@ -54,9 +54,9 @@ class CheckedUser(Base):
                             self.id)
 
 class PSQL:
-    def __init__(self, psql_username, psql_password):
+    def __init__(self, psql_username, psql_password, psql_address, psql_db):
         print('Opening connection to PSQL DB')
-        db_string = "postgresql://" + psql_username + ":" + psql_password + "@jobchain-db.czszo1jjniwj.eu-central-1.rds.amazonaws.com:5432/jobchaindatabase"
+        db_string = "postgresql://" + psql_username + ":" + psql_password + "@" + psql_address + ":5432/" + psql_db
         self.db = create_engine(db_string)
         self.Session = sessionmaker(self.db)
         self.session = self.Session()

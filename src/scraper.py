@@ -30,6 +30,8 @@ class Scraper:
         self.password = os.getenv('JOBCHAIN_PASSWORD')
         self.psql_username = os.getenv('PSQL_USERNAME')
         self.psql_password = os.getenv('PSQL_PASSWORD')
+        self.psql_address = os.getenv('PSQL_ADDRESS')
+        self.psql_db = os.getenv('PSQL_DB')
         self.verify_env_var()
         self.potential = None
         self.psql = None
@@ -66,6 +68,12 @@ class Scraper:
             sys.exit(0)
         elif not self.psql_password:
             print("Missing psql_password")
+            sys.exit(0)
+        elif not self.psql_address:
+            print("Missing psql_address")
+            sys.exit(0)
+        elif not self.psql_db:
+            print("Missing psql_db")
             sys.exit(0)
     
     def login(self):
@@ -113,7 +121,7 @@ class Scraper:
             self.aws_region
         )
 
-        self.psql = PSQL(self.psql_username, self.psql_password)
+        self.psql = PSQL(self.psql_username, self.psql_password, self.psql_address, self.psql_db)
         self.session = self.psql.session
         print(self.session)
 
