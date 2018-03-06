@@ -100,8 +100,11 @@ class Person:
                 self.educations.append(learning)
 
     def getAlsoViewedUrls(self):
+        alsoViewedSection = self.page.find(class_='pv-browsemap-section')
+        if alsoViewedSection is None:
+            return
         pattern = '^\/in\/[a-zA-Z0-9\-]+\/$'
-        for link in self.page.find_all('a'):
+        for link in alsoViewedSection.find_all('a'):
             url = link.get('href')
             if url and re.fullmatch(pattern, url):
                 self.also_viewed_urls.append(url)
