@@ -189,6 +189,9 @@ class Scraper:
             print(Fore.GREEN + 'Logged In' + Style.RESET_ALL)
             self.sleep(1.0, 3.0)
 
+        if self.potential and self.potential.count() == 0:
+            self.potential.seed()
+
         while self.potential and self.potential.count():
             current_message = self.potential.first()
             current_id = current_message.get_body()
