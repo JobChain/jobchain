@@ -136,44 +136,26 @@ class Scraper:
             self.run()
 
     def scroll(self):
-        while True:
+        for i in range(0, 5):
             try:
                 print(Fore.YELLOW + 'Attempting to scroll ' + Style.RESET_ALL)
                 self.maneuver()
             except TimeoutException as tex:
-                while True:
-                    print(Fore.RED + 'Experienced Timeout Exception:' + Style.RESET_ALL)
-                    print(tex)
-                    try:
-                        self.hack()
-                    except WebDriverException as webdex:
-                        print(Fore.RED + 'Experienced WebDriver Exception in self.hack():' + Style.RESET_ALL)
-                        print(webdex)
-                        continue
-                    else:
-                        print(Fore.GREEN + 'hacked!' + Style.RESET_ALL)
-                        self.sleep(3.0, 6.0)
-                        break
+                print(Fore.RED + 'Experienced Timeout Exception:' + Style.RESET_ALL)
+                print(tex)
+                self.hack()
                 continue
             except WebDriverException as wdex:
-                while True:
-                    print(Fore.RED + 'Experienced WebDriver Exception:' + Style.RESET_ALL)
-                    print(wdex)
-                    try:
-                        self.hack()
-                    except WebDriverException as widdex:
-                        print(Fore.RED + 'Experienced WebDriver Exception in self.hack():' + Style.RESET_ALL)
-                        print(widdex)
-                        continue
-                    else:
-                        print(Fore.GREEN + 'hacked!' + Style.RESET_ALL)
-                        self.sleep(3.0, 6.0)
-                        break
+                print(Fore.RED + 'Experienced WebDriver Exception:' + Style.RESET_ALL)
+                print(wdex)
+                self.hack()
                 continue
             else:
                 print(Fore.GREEN + 'Scrolled ' + Style.RESET_ALL)
                 self.sleep(3.0, 6.0)
+                return True
                 break
+        return False
 
     def visit(self, url):
         while True:
@@ -235,7 +217,12 @@ class Scraper:
             current_id = current_message.get_body()
 
             self.visit(self.root_url + current_id)
-            self.scroll()
+
+            if not self.scroll():
+                print(Fore.YELLOW + current_id + ' Waste' + Style.RESET_ALL)
+                self.potential.remove(current_message)
+                continue
+
             soup = BeautifulSoup(self.browser.page_source.encode('utf-8').decode('ascii', 'ignore'), 'html.parser')
             if self.session.query(User).filter_by(id=current_id).first():
                 print(Fore.YELLOW + current_id + ' Already in DB' + Style.RESET_ALL)
