@@ -42,11 +42,20 @@ class Que:
 
     def first(self):
         messages = self.fetch()
-        return messages[0] if self.count() else None
+        return messages[0] if len(messages) > 0 else None
+
+    def initial(self):
+        return '/in/pushkinabbott/'
 
     def seed(self):
-        self.add('/in/pushkinabbott/')
+        self.add(self.initial())
+        print('Seeding Q')
     
     def purge(self):
         self.q.purge()
         print('Q Purged')
+
+    def reset(self):
+        print('Q reset')
+        self.purge()
+        self.seed()
