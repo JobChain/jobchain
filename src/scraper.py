@@ -113,7 +113,7 @@ class Scraper:
             self.aws_region
         )
 
-        self.psql = PSQL(self.psql_username, self.psql_password).get_session()
+        self.psql = PSQL(self.psql_username, self.psql_password)
         self.session = self.psql.get_session()
 
     def hack(self):
