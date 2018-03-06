@@ -57,7 +57,7 @@ class PSQL:
     def __init__(self, psql_username, psql_password):
         print('Opening connection to PSQL DB')
         db_string = "postgresql://" + psql_username + ":" + psql_password + "@jobchain-db.czszo1jjniwj.eu-central-1.rds.amazonaws.com:5432/jobchaindatabase"
-        db = create_engine(db_string)
+        self.db = create_engine(db_string)
         self.Session = sessionmaker(db)  
         self.session = self.Session()
         Base.metadata.create_all(db)
@@ -65,4 +65,10 @@ class PSQL:
         
     def get_session(self):
         return self.session
+
+    def reset(self):
+        self.db.execute('DROP TABLE IF EXISTS "LINKEDINUSER";')
+        self.db.execute('DROP TABLE IF EXISTS "WORK";');
+        self.db.execute('DROP TABLE IF EXISTS "EDUCATION";');
+        self.db.execute('DROP TABLE IF EXISTS "CHECKEDUSER";');
 
