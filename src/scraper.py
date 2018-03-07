@@ -11,6 +11,7 @@ from datetime import datetime
 from colorama import Fore, Back, Style
 import os, time, random, requests, re, sys
 from person import Person
+from helpers import educationStartDate, educationEndDate, parseDateRange
 from que import Que
 from psql import User, Work, Education, PSQL, CheckedUser
 
@@ -122,7 +123,6 @@ class Scraper:
             self.aws_secret_access_key,
             self.aws_region
         )
-
 
         self.psql = PSQL(self.psql_username, self.psql_password, self.psql_address, self.psql_db)
         self.session = self.psql.session
@@ -275,13 +275,16 @@ class Scraper:
         for e in person.experiences:
             work = Work(company_name=e['company'],
                         user_id=person.id,
-                        job_title=e['position'])
+                        job_title=e['position'],
+                        location=e['location'])
             self.session.add(work)
             self.session.commit()
         for e in person.educations:
             education = Education(school_name=e['school'],
                                   user_id=person.id,
-                                  program=e['degree'])
+                                  program=e['degree'],
+                                  start_date=educationStartDate(e['beginTime']),
+                                  end_date=educationEndDate(e['endTime']))
             self.session.add(education)
             self.session.commit()
         print(Fore.GREEN + 'Saved data to PSQL' + Style.RESET_ALL)
