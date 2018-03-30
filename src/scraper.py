@@ -214,19 +214,20 @@ class Scraper:
 
         while self.potential.first():
             current_message = self.potential.first()
+            self.potential.remove(current_message)
             current_id = current_message.get_body()
 
             self.visit(self.root_url + current_id)
 
             if not self.scroll():
                 print(Fore.YELLOW + current_id + ' Waste' + Style.RESET_ALL)
-                self.potential.remove(current_message)
+                # self.potential.remove(current_message)
                 continue
 
             soup = BeautifulSoup(self.browser.page_source.encode('utf-8').decode('ascii', 'ignore'), 'html.parser')
             if self.session.query(User).filter_by(id=current_id).first():
                 print(Fore.YELLOW + current_id + ' Already in DB' + Style.RESET_ALL)
-                self.potential.remove(current_message)
+                # self.potential.remove(current_message)
                 continue
             person = Person(soup, current_id)
             if person.shouldScrape():
@@ -243,10 +244,10 @@ class Scraper:
                 print('\t' + 'Visited:', len(self.visited))
                 print('\t' + 'Elapsed time:', datetime.now() - self.starttime)
                 print('------------------------------------------------------------------------')
-                self.potential.remove(current_message)
+                # self.potential.remove(current_message)
             else:
                 print(Fore.BLUE + 'Skipped:' + Style.RESET_ALL, current_id)
-                self.potential.remove(current_message)
+                # self.potential.remove(current_message)
 
         self.sleep(5.0, 10.0)
         self.browser.quit()
