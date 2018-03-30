@@ -44,11 +44,11 @@ def parseDate(dateRange):
     elif length == 4:
         start_month = list(calendar.month_abbr).index(dates[0])
         start = date(int(dates[1]), start_month, 1)
+        end_month = list(calendar.month_abbr).index(dates[2])
         if dates[0] == dates[2] and dates[1] == dates[3]:
             end_day = calendar.monthrange(int(dates[3]), end_month)[1]
         else:
             end_day = 1
-        end_month = list(calendar.month_abbr).index(dates[2])
         end = date(int(dates[3]), end_month, end_day)
     return (start, end)
 
