@@ -11,7 +11,7 @@ from datetime import datetime
 from colorama import Fore, Back, Style
 import os, time, random, requests, re, sys
 from person import Person
-from helpers import educationStartDate, educationEndDate, parseDateRange
+from helpers import educationStartDate, educationEndDate, parseDate
 from que import Que
 from psql import User, Work, Education, PSQL, CheckedUser
 
@@ -277,7 +277,9 @@ class Scraper:
             work = Work(company_name=e['company'],
                         user_id=person.id,
                         job_title=e['position'],
-                        location=e['location'])
+                        location=e['location'],
+                        start_date=parseDate(e['date_range'])[0],
+                        end_date=parseDate(e['date_range'])[1])
             self.session.add(work)
             self.session.commit()
         for e in person.educations:
