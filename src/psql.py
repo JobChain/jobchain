@@ -62,3 +62,11 @@ class PSQL:
         self.session = self.Session()
         Base.metadata.create_all(self.db)
         print('Opened connection to PSQL DB')
+
+    def reset(self):
+        print(Fore.RED + 'Deleting all rows in db' + Style.RESET_ALL)
+        self.db.execute('REMOVE FROM "LINKEDINUSER";')
+        self.db.execute('REMOVE FROM "WORK";')
+        self.db.execute('REMOVE FROM "EDUCATION";')
+        self.db.execute('REMOVE FROM "CHECKEDUSER";')
+        print(Fore.GREEN + 'Deleted' + Style.RESET_ALL)

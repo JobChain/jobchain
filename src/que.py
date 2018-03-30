@@ -50,7 +50,7 @@ class Que:
     def seed(self):
         self.add(self.initial())
         print('Seeding Q')
-    
+
     def purge(self):
         self.q.purge()
         print('Q Purged')
