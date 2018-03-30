@@ -62,13 +62,3 @@ class PSQL:
         self.session = self.Session()
         Base.metadata.create_all(self.db)
         print('Opened connection to PSQL DB')
-
-    def reset(self):
-        print('DB reset')
-        self.db.execute('DROP TABLE IF EXISTS "LINKEDINUSER";')
-        self.db.execute('DROP TABLE IF EXISTS "WORK";')
-        self.db.execute('DROP TABLE IF EXISTS "EDUCATION";')
-        self.db.execute('DROP TABLE IF EXISTS "CHECKEDUSER";')
-        Base.metadata.create_all(self.db)
-        print('DB purged')
-
