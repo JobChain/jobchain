@@ -254,7 +254,7 @@ class Scraper:
 
     def reset(self):
         print('all Purged')
-        # self.psql.reset()
+        self.psql.reset()
         self.potential.reset()
         while(not self.potential.first()):
             self.sleep(2.0,3.0)
