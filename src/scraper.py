@@ -38,7 +38,7 @@ class Scraper:
         self.psql = None
         self.visited = {}
         self.options = Options()
-        self.options.add_argument('headless')
+        # self.options.add_argument('headless')
         self.options.add_argument('no-sandbox')
         self.browser = None
         self.psql = None
@@ -254,8 +254,8 @@ class Scraper:
 
     def reset(self):
         print('all Purged')
-        self.psql.reset()
-        self.potential.reset()
+        # self.psql.reset()
+        # self.potential.reset()
         while(not self.potential.first()):
             self.sleep(2.0,3.0)
         self.is_in_checked_user(self.potential.initial())
