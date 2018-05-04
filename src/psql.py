@@ -53,6 +53,17 @@ class CheckedUser(Base):
        return "<User(id='%s')>" % (
                             self.id)
 
+class Company(Base):
+    __tablename__ = 'COMPANY'
+
+    id = Column(String, primary_key=True)
+    logo = Column(String)
+    url = Column(String)
+
+    def __repr__(self):
+        return "<Company(id='%s', logo='%s', url='%s')>" %(
+                            self.id, self.logo, self.url)
+
 class PSQL:
     def __init__(self, psql_username, psql_password, psql_address, psql_db):
         print('Opening connection to PSQL DB')

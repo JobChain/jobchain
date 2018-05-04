@@ -10,12 +10,14 @@ class Person:
         self.name = None
         self.experiences = []
         self.educations = []
+        self.companies = []
         self.also_viewed_urls = []
         self.scrape()
 
     def scrape(self):
         self.getExperiences()
         self.getEducation()
+        self.getCompanies()
         self.getAlsoViewedUrls()
         self.getName()
 
@@ -27,7 +29,8 @@ class Person:
         section = self.page.find(id='experience-section')
         if section is None:
             return
-        for experience in section.find_all('li', class_='pv-profile-section__card-item pv-position-entity ember-view'):
+        # for experience in section.find_all('li', class_='pv-profile-section__card-item pv-position-entity ember-view') + section.find_all('li', class_='pv-profile-section__sortable-card-item') + section.find_all('li', class_='pv-profile-section__sortable-item'):
+        for experience in section.find_all('li', class_='pv-profile-section__card-item') + section.find_all('li', class_='pv-profile-section__sortable-card-item') + section.find_all('li', class_='pv-profile-section__sortable-item'):
             job = {}
             if experience is None:
                 return
@@ -63,6 +66,32 @@ class Person:
                 job['date_duration'] = None if date_duration is None else date_duration.get_text()
                 job['location'] = None if location is None else location.get_text()
                 self.experiences.append(job)
+
+    def getCompanies(self):
+        # Image: outer div has class 'pv-entity__logo company-logo', grab inner image's src
+        section = self.page.find(id='experience-section')
+        if section is None:
+            return
+        for experience in section.find_all('li', class_='pv-profile-section__card-item pv-position-entity ember-view') + section.find_all('li', class_='pv-profile-section__sortable-card-item pv-position-entity ember-view'):
+            company = {}
+            if experience is None:
+                return
+            summary = experience.find('div', class_='pv-entity__summary-info')
+            if summary is None:
+                return
+            companyLogoSection = experience.find('div', class_='pv-entity__logo company-logo')
+            if companyLogoSection is None:
+                return
+            c = summary.find('h4', class_='Sans-17px-black-85%').find('span', class_='pv-entity__secondary-title')
+            logo = companyLogoSection.find('img')
+            logo_src = logo['src'] if 'src' in logo.attrs else []
+            urlA = experience.find('a')
+            urlA_src = urlA['href'] if 'href' in urlA.attrs else []
+
+            company['logo'] = None if logo_src is None else logo_src
+            company['id'] = None if c is None else c.get_text()
+            company['url'] = None if urlA_src is None else urlA_src
+            self.companies.append(company)
 
     def getEducation(self):
         section = self.page.find_all(class_='pv-education-entity')
@@ -129,10 +158,16 @@ class Person:
         value += 'Experience: ' + '\n'
         for experience in self.experiences:
             value += '\t' + str(experience['company']) + '\n'
-            value += '\t\t' +  str(experience['position']) + '\n'
+            value += '\t\t' + str(experience['position']) + '\n'
             value += '\t\t' + str(experience['date_range']) + '\n'
             value += '\t\t' + str(experience['date_duration']) + '\n'
             value += '\t\t' + str(experience['location']) + '\n'
+
+        value += 'Company: ' + '\n'
+        for company in self.companies:
+            value += '\t' + str(company['id']) + '\n'
+            value += '\t\t' + str(company['logo']) + '\n'
+            value += '\t\t' + str(company['url']) + '\n'
 
         value += 'Viewed: ' + '\n'
         for url in self.also_viewed_urls:

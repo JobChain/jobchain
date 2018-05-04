@@ -1,6 +1,7 @@
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
+from selenium.webdriver.common.action_chains import ActionChains
 from selenium.common.exceptions import TimeoutException, WebDriverException
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
@@ -13,7 +14,7 @@ import os, time, random, requests, re, sys
 from person import Person
 from helpers import educationStartDate, educationEndDate, parseDate
 from que import Que
-from psql import User, Work, Education, PSQL, CheckedUser
+from psql import User, Work, Education, PSQL, CheckedUser, Company
 
 
 class Scraper:
@@ -224,7 +225,21 @@ class Scraper:
                 # self.potential.remove(current_message)
                 continue
 
+            showMoreButtons = self.browser.find_elements_by_css_selector("section[id='experience-section'] button.pv-profile-section__see-more-inline")
+            while showMoreButtons:
+                print(Fore.YELLOW + str(len(showMoreButtons)) + ' show alls' + Style.RESET_ALL)
+                for button in showMoreButtons:
+                    ActionChains(self.browser).move_to_element(button).perform()
+                    scroll = self.partial_scroll + "-2));"
+                    self.browser.execute_script(scroll)
+                    button.click()
+                    print(Fore.BLUE + 'Clicked: ' + Style.RESET_ALL)
+                    self.sleep(1.0, 2.0)
+
+                showMoreButtons = self.browser.find_elements_by_css_selector("section[id='experience-section'] button.pv-profile-section__see-more-inline")
+
             soup = BeautifulSoup(self.browser.page_source.encode('utf-8').decode('ascii', 'ignore'), 'html.parser')
+
             if self.session.query(User).filter_by(id=current_id).first():
                 print(Fore.YELLOW + current_id + ' Already in DB' + Style.RESET_ALL)
                 # self.potential.remove(current_message)
@@ -268,6 +283,12 @@ class Scraper:
             self.session.commit()
             return False
 
+    def is_in_companies(self, id):
+        if self.session.query(Company).filter_by(id=id).first():
+            return True
+        else:
+            return False
+
     def write_to_db(self, person):
         print(Fore.GREEN + 'Saving data to PSQL' + Style.RESET_ALL)
         u = User(id=person.id, name=person.name)
@@ -290,6 +311,11 @@ class Scraper:
                                   end_date=educationEndDate(e['endTime']))
             self.session.add(education)
             self.session.commit()
+        for c in person.companies:
+            if not self.is_in_companies(c['id']):
+                company = Company(id=c['id'], logo=c['logo'], url=c['url'])
+                self.session.add(company)
+                self.session.commit()
         print(Fore.GREEN + 'Saved data to PSQL' + Style.RESET_ALL)
 
 if __name__ == '__main__':
