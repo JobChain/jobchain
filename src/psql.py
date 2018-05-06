@@ -71,6 +71,7 @@ class PSQL:
         self.db = create_engine(db_string)
         self.Session = sessionmaker(self.db)
         self.session = self.Session()
+        print('Test')
         Base.metadata.create_all(self.db)
         print('Opened connection to PSQL DB')
 

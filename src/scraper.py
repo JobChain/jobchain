@@ -210,62 +210,72 @@ class Scraper:
             print(Fore.RED + 'Q is None' + Style.RESET_ALL)
             sys.exit(0)
 
-        if not self.potential.first():
-            self.reset()
+        self.visit("https://www.linkedin.com/school/uwaterloo/alumni/?educationEndYear=2015&educationStartYear=2010&keywords=software")
+        self.browser.execute_script("window.scrollTo(0, document.body.scrollHeight)")
+        lastHeight = self.browser.execute_script("return document.body.scrollHeight")
+        while True:
+            self.browser.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+            self.sleep(3.0, 3.2)
+            newHeight = self.browser.execute_script("return document.body.scrollHeight")
+            if newHeight == lastHeight:
+                break
+            lastHeight = newHeight
+        print(Fore.YELLOW + 'Done scrolling' + Style.RESET_ALL)
+        soup = BeautifulSoup(self.browser.page_source.encode('utf-8').decode('ascii', 'ignore'), 'html.parser')
+        print(self.browser.page_source)
 
-        while self.potential.first():
-            current_message = self.potential.first()
-            self.potential.remove(current_message)
-            current_id = current_message.get_body()
+        # while self.potential.first():
+        #     current_message = self.potential.first()
+        #     self.potential.remove(current_message)
+        #     current_id = current_message.get_body()
 
-            self.visit(self.root_url + current_id)
+        #     self.visit(self.root_url + current_id)
 
-            if not self.scroll():
-                print(Fore.YELLOW + current_id + ' Waste' + Style.RESET_ALL)
-                # self.potential.remove(current_message)
-                continue
+        #     if not self.scroll():
+        #         print(Fore.YELLOW + current_id + ' Waste' + Style.RESET_ALL)
+        #         # self.potential.remove(current_message)
+        #         continue
 
-            showMoreButtons = self.browser.find_elements_by_css_selector("section[id='experience-section'] button.pv-profile-section__see-more-inline")
-            while showMoreButtons:
-                print(Fore.YELLOW + str(len(showMoreButtons)) + ' show alls' + Style.RESET_ALL)
-                for button in showMoreButtons:
-                    ActionChains(self.browser).move_to_element(button).perform()
-                    scroll = self.partial_scroll + "-2));"
-                    self.browser.execute_script(scroll)
-                    button.click()
-                    print(Fore.BLUE + 'Clicked: ' + Style.RESET_ALL)
-                    self.sleep(1.0, 2.0)
+        #     showMoreButtons = self.browser.find_elements_by_css_selector("section[id='experience-section'] button.pv-profile-section__see-more-inline")
+        #     while showMoreButtons:
+        #         print(Fore.YELLOW + str(len(showMoreButtons)) + ' show alls' + Style.RESET_ALL)
+        #         for button in showMoreButtons:
+        #             ActionChains(self.browser).move_to_element(button).perform()
+        #             scroll = self.partial_scroll + "-2));"
+        #             self.browser.execute_script(scroll)
+        #             button.click()
+        #             print(Fore.BLUE + 'Clicked: ' + Style.RESET_ALL)
+        #             self.sleep(1.0, 2.0)
 
-                showMoreButtons = self.browser.find_elements_by_css_selector("section[id='experience-section'] button.pv-profile-section__see-more-inline")
-            self.sleep(2.0, 3.0)
-            soup = BeautifulSoup(self.browser.page_source.encode('utf-8').decode('ascii', 'ignore'), 'html.parser')
+        #         showMoreButtons = self.browser.find_elements_by_css_selector("section[id='experience-section'] button.pv-profile-section__see-more-inline")
+            # soup = BeautifulSoup(self.browser.page_source.encode('utf-8').decode('ascii', 'ignore'), 'html.parser')
 
-            if self.session.query(User).filter_by(id=current_id).first():
-                print(Fore.YELLOW + current_id + ' Already in DB' + Style.RESET_ALL)
-                # self.potential.remove(current_message)
-                continue
-            person = Person(soup, current_id)
-            if person.shouldScrape():
-                self.visited[current_id] = person
-                for url in person.also_viewed_urls:
-                    if url not in self.visited and not self.is_in_checked_user(url):
-                        self.potential.add(url)
+            # if self.session.query(User).filter_by(id=current_id).first():
+            #     print(Fore.YELLOW + current_id + ' Already in DB' + Style.RESET_ALL)
+            #     # self.potential.remove(current_message)
+            #     continue
+            # person = Person(soup, current_id)
+            # if person.shouldScrape():
+            #     self.visited[current_id] = person
+            #     for url in person.also_viewed_urls:
+            #         if url not in self.visited and not self.is_in_checked_user(url):
+            #             self.potential.add(url)
 
-                self.write_to_db(person)
-                print(person)
-                print('------------------------------------------------------------------------')
-                print('Stats:')
-                print('\t' + 'Queue Length:', self.potential.count())
-                print('\t' + 'Visited:', len(self.visited))
-                print('\t' + 'Elapsed time:', datetime.now() - self.starttime)
-                print('------------------------------------------------------------------------')
-                # self.potential.remove(current_message)
-            else:
-                print(Fore.BLUE + 'Skipped:' + Style.RESET_ALL, current_id)
-                # self.potential.remove(current_message)
+            #     self.write_to_db(person)
+            #     print(person)
+            #     print('------------------------------------------------------------------------')
+            #     print('Stats:')
+            #     print('\t' + 'Queue Length:', self.potential.count())
+            #     print('\t' + 'Visited:', len(self.visited))
+            #     print('\t' + 'Elapsed time:', datetime.now() - self.starttime)
+            #     print('------------------------------------------------------------------------')
+            #     # self.potential.remove(current_message)
+            # else:
+            #     print(Fore.BLUE + 'Skipped:' + Style.RESET_ALL, current_id)
+            #     # self.potential.remove(current_message)
 
-        self.sleep(5.0, 10.0)
-        self.browser.quit()
+        self.sleep(100.0, 100.0)
+        # self.browser.quit()
 
     def reset(self):
         print('all Purged')
