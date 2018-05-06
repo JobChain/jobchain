@@ -237,7 +237,7 @@ class Scraper:
                     self.sleep(1.0, 2.0)
 
                 showMoreButtons = self.browser.find_elements_by_css_selector("section[id='experience-section'] button.pv-profile-section__see-more-inline")
-
+            self.sleep(2.0, 3.0)
             soup = BeautifulSoup(self.browser.page_source.encode('utf-8').decode('ascii', 'ignore'), 'html.parser')
 
             if self.session.query(User).filter_by(id=current_id).first():
