@@ -247,9 +247,9 @@ class Scraper:
             person = Person(soup, current_id)
             if person.shouldScrape():
                 self.visited[current_id] = person
-                for url in person.also_viewed_urls:
-                    if url not in self.visited and not self.is_in_checked_user(url):
-                        self.potential.add(url)
+                # for url in person.also_viewed_urls:
+                #     if url not in self.visited and not self.is_in_checked_user(url):
+                #         self.potential.add(url)
 
                 self.write_to_db(person)
                 print(person)
