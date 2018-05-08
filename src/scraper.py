@@ -214,9 +214,11 @@ class Scraper:
             self.reset()
 
         while self.potential.first():
-            current_message = self.potential.first()
-            self.potential.remove(current_message)
-            current_id = current_message.get_body()
+            # current_message = self.potential.first()
+            # self.potential.remove(current_message)
+            # current_id = current_message.get_body()
+
+            current_id = '/in/'
 
             self.visit(self.root_url + current_id)
 
@@ -263,6 +265,10 @@ class Scraper:
             else:
                 print(Fore.BLUE + 'Skipped:' + Style.RESET_ALL, current_id)
                 # self.potential.remove(current_message)
+            
+            print(Fore.YELLOW + 'Overrided. Scraped: ' + Style.RESET_ALL, current_id)
+            self.browser.sleep(2.0, 5.0)
+            self.browser.quit()
 
         self.sleep(5.0, 10.0)
         self.browser.quit()
