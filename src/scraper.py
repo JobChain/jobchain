@@ -218,7 +218,7 @@ class Scraper:
             # self.potential.remove(current_message)
             # current_id = current_message.get_body()
 
-            current_id = '/in/'
+            current_id = '/in/abrgr'
 
             self.visit(self.root_url + current_id)
 
@@ -249,9 +249,9 @@ class Scraper:
             person = Person(soup, current_id)
             if person.shouldScrape():
                 self.visited[current_id] = person
-                for url in person.also_viewed_urls:
-                    if url not in self.visited and not self.is_in_checked_user(url):
-                        self.potential.add(url)
+                # for url in person.also_viewed_urls:
+                #     if url not in self.visited and not self.is_in_checked_user(url):
+                #         self.potential.add(url)
 
                 self.write_to_db(person)
                 print(person)
@@ -267,7 +267,7 @@ class Scraper:
                 # self.potential.remove(current_message)
             
             print(Fore.YELLOW + 'Overrided. Scraped: ' + Style.RESET_ALL, current_id)
-            self.browser.sleep(2.0, 5.0)
+            self.sleep(5.0, 10.0)
             self.browser.quit()
 
         self.sleep(5.0, 10.0)
