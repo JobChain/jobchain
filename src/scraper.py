@@ -212,6 +212,8 @@ class Scraper:
 
         if not self.potential.first():
             self.reset()
+            # self.drop()
+            return
 
         while self.potential.first():
             current_message = self.potential.first()
@@ -266,6 +268,9 @@ class Scraper:
 
         self.sleep(5.0, 10.0)
         self.browser.quit()
+
+    def drop(self):
+        self.psql.drop()
 
     def reset(self):
         print('all Purged')

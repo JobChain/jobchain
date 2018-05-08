@@ -2,6 +2,7 @@ from sqlalchemy import Column, ForeignKey, Integer, String, MetaData, Date, Bool
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, sessionmaker
 from sqlalchemy import create_engine
+from colorama import Fore, Back, Style
 
 Base = declarative_base()
 
@@ -81,3 +82,11 @@ class PSQL:
         self.db.execute('REMOVE FROM "EDUCATION";')
         self.db.execute('REMOVE FROM "CHECKEDUSER";')
         print(Fore.GREEN + 'Deleted' + Style.RESET_ALL)
+
+    def drop(self):
+        self.db.execute('DELETE FROM "LINKEDINUSER";')
+        self.db.execute('DELETE FROM "WORK";')
+        self.db.execute('DELETE FROM "EDUCATION";')
+        self.db.execute('DELETE FROM "CHECKEDUSER";')
+        self.db.execute('DELETE FROM "COMPANY";')
+        print(Fore.GREEN + 'Cleared db' + Style.RESET_ALL)

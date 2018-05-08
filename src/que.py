@@ -45,10 +45,15 @@ class Que:
         return messages[0] if len(messages) > 0 else None
 
     def initial(self):
-        return '/in/pushkinabbott/'
+        with open('./user.txt') as f:
+            content = f.readlines()
+        content = [x.strip() for x in content]
+        return content
 
     def seed(self):
-        self.add(self.initial())
+        # self.initial()
+        for item in self.initial():
+            self.add(item)
         print('Seeding Q')
 
     def purge(self):
@@ -57,5 +62,5 @@ class Que:
 
     def reset(self):
         print('Q reset')
-        self.purge()
+        # self.purge()
         self.seed()
