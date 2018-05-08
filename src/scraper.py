@@ -268,12 +268,14 @@ class Scraper:
         self.browser.quit()
 
     def reset(self):
-        print('all Purged')
+        print('Done')
+        return
+        # print('all Purged')
         # self.psql.reset()
         # self.potential.reset()
-        while(not self.potential.first()):
-            self.sleep(2.0,3.0)
-        self.is_in_checked_user(self.potential.initial())
+        # while(not self.potential.first()):
+        #     self.sleep(2.0,3.0)
+        # self.is_in_checked_user(self.potential.initial())
 
     def is_in_checked_user(self, id):
         if self.session.query(CheckedUser).filter_by(id=id).first():
