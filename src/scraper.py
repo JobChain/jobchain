@@ -318,6 +318,13 @@ class Scraper:
                 company = Company(id=c['id'], logo=c['logo'], url=c['url'])
                 self.session.add(company)
                 self.session.commit()
+            else:
+                if c['logo']:
+                    self.session.query(Company).filter_by(id=c['id']).delete()
+                    updateCompany = Company(id=c['id'], logo=c['logo'], url=c['url'])
+                    self.session.add(updateCompany)
+                    self.session.commit()
+                    print('UPDATED LOGO')
         print(Fore.GREEN + 'Saved data to PSQL' + Style.RESET_ALL)
 
 if __name__ == '__main__':
